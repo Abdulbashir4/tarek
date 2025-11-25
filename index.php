@@ -1,3 +1,8 @@
+<?php
+include 'server_connection.php';
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,9 +29,55 @@
     </div>
     <!-- HEADER MENU BAR -->
   <nav class="bg-indigo-600 text-white">
-    <div class="max-w-7xl mx-auto px-4 py-2 overflow-x-auto">
+    <div class="max-w-7xl mx-auto px-4 py-2 overflow-x-auto overflow-y-hidden">
       <ul class="flex space-x-6 text-sm md:text-base font-medium whitespace-nowrap">
-        <li><a href="#" class="hover:text-gray-200">Home</a></li>
+        <?php
+      // 1️⃣ Load Categories
+      $categories = $conn->query("SELECT * FROM categories");
+
+      while ($cat = $categories->fetch_assoc()) {
+        $cat_id = $cat['category_id'];
+
+        echo '
+        <li class="relative group z-50">
+          <a href="#" class="hover:text-gray-200 flex items-center gap-1">
+            '.$cat['category_name'].' ▼
+          </a>';
+
+        // 2️⃣ Load Subcategories
+        $sub_query = $conn->query("SELECT * FROM subcategories WHERE category_id=$cat_id");
+
+        echo '<ul class="hidden group-hover:block bg-white text-black shadow-lg rounded w-48 z-50">';
+
+        while ($sub = $sub_query->fetch_assoc()) {
+
+          $sub_id = $sub['subcategory_id'];
+
+          echo '
+          <li class="relative group/sub px-3 py-2 hover:bg-gray-100">
+            <a href="#" class="flex justify-between">
+              '.$sub['subcategory_name'].' ►
+            </a>';
+          
+          // 3️⃣ Load Brands
+          $brand_query = $conn->query("SELECT * FROM brands WHERE subcategory_id=$sub_id");
+
+          echo '<ul class=" left-full top-0 bg-white text-black shadow-lg 
+               rounded w-48 hidden group-hover/sub:block z-50">';
+
+          while ($brand = $brand_query->fetch_assoc()) {
+            echo '
+            <li class="px-3 py-2 hover:bg-gray-100">
+              <a href="#">'.$brand['brand_name'].'</a>
+            </li>';
+          }
+
+          echo '</ul></li>';
+        }
+
+        echo '</ul></li>';
+      }
+      ?>
         <li><a href="admin.php" class="hover:text-gray-200">Admin</a></li>
         <li><a href="test.php" class="hover:text-gray-200">Test</a></li>
         <li><a href="shop.php" class="hover:text-gray-200">Shop</a></li>
