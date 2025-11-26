@@ -1,11 +1,34 @@
+<?php 
+include "server_connection.php";
+
+// URL থেকে product_id নাও
+if(!isset($_GET['product_id'])){
+    echo "Invalid product!";
+    exit;
+}
+
+$product_id = (int)$_GET['product_id'];
+
+// product details load
+$query = $conn->query("SELECT * FROM products WHERE product_id = $product_id");
+
+if($query->num_rows == 0){
+    echo "Product not found!";
+    exit;
+}
+
+$p = $query->fetch_assoc();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Product Details</title>
+  <title><?php echo $p['product_name']; ?> - Product Details</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
+
 <body class="bg-gray-100">
 
   <!-- HEADER -->
@@ -13,9 +36,9 @@
     <h1 class="text-2xl font-bold text-indigo-600">ShopPro</h1>
     <nav class="hidden md:block">
       <ul class="flex space-x-6 text-gray-700 font-medium">
-        <li><a href="#" class="hover:text-indigo-600">Home</a></li>
-        <li><a href="#" class="hover:text-indigo-600">Shop</a></li>
-        <li><a href="#" class="hover:text-indigo-600">Admin</a></li>
+        <li><a href="index.php" class="hover:text-indigo-600">Home</a></li>
+        <li><a href="shop.php" class="hover:text-indigo-600">Shop</a></li>
+        <li><a href="admin.php" class="hover:text-indigo-600">Admin</a></li>
       </ul>
     </nav>
   </header>
@@ -26,32 +49,50 @@
 
       <!-- LEFT: PRODUCT GALLERY -->
       <div>
-        <img src="product_image/shart1.jpg" class="rounded-xl shadow-lg ml-30 mb-10 w-[300px] h-[300px]" />
 
+        <!-- main image -->
+        <img src="uploads/products/<?php echo $p['thumbnail']; ?>" 
+             class="rounded-xl shadow-lg mx-auto mb-10 w-[300px] h-[300px] object-cover" />
+
+        <!-- extra images (optional) -->
         <div class="grid grid-cols-4 gap-3">
-          <img src="product_image/shart2.jpg" class="rounded-lg shadow cursor-pointer hover:opacity-80" />
-          <img src="product_image/shart3.jpg" class="rounded-lg shadow cursor-pointer hover:opacity-80" />
-          <img src="product_image/shart4.jpg" class="rounded-lg shadow cursor-pointer hover:opacity-80" />
-          <img src="product_image/shart5.jpg" class="rounded-lg shadow cursor-pointer hover:opacity-80" />
+
+        <?php
+        // যদি আপনার product_images টেবিল থাকে, এখানে লোড করবেন  
+        // আপাতত একটিই image দেখানোর জন্য লুপ ছাড়া example:
+
+        echo '
+          <img src="uploads/products/'.$p['thumbnail'].'" class="rounded-lg shadow cursor-pointer hover:opacity-80" />
+          <img src="uploads/products/'.$p['thumbnail'].'" class="rounded-lg shadow cursor-pointer hover:opacity-80" />
+          <img src="uploads/products/'.$p['thumbnail'].'" class="rounded-lg shadow cursor-pointer hover:opacity-80" />
+          <img src="uploads/products/'.$p['thumbnail'].'" class="rounded-lg shadow cursor-pointer hover:opacity-80" />
+        ';
+        ?>
+
         </div>
+
       </div>
 
       <!-- RIGHT: PRODUCT DETAILS -->
       <div>
-        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">In Stock</span>
 
-        <h2 class="text-4xl font-bold mt-3 mb-2 text-gray-900">Premium Wireless Headphones</h2>
+        <!-- Stock Status -->
+        <?php if($p['stock_qty'] > 0){ ?>
+            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">In Stock</span>
+        <?php } else { ?>
+            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-semibold">Out of Stock</span>
+        <?php } ?>
 
-        <div class="flex items-center space-x-2 mb-3">
-          <span class="text-yellow-400 text-xl">⭐⭐⭐⭐☆</span>
-          <p class="text-gray-600 text-sm">(42 reviews)</p>
-        </div>
+        <h2 class="text-4xl font-bold mt-3 mb-2 text-gray-900">
+          <?php echo $p['product_name']; ?>
+        </h2>
 
-        <p class="text-3xl font-bold text-indigo-600 mb-4">$299</p>
+        <p class="text-3xl font-bold text-indigo-600 mb-4">
+          $<?php echo $p['price']; ?>
+        </p>
 
         <p class="text-gray-700 mb-6 leading-relaxed">
-          Experience immersive sound quality with our premium wireless headphones. Designed for comfort,
-          durability, and superior audio performance.
+          <?php echo $p['short_description']; ?>
         </p>
 
         <!-- Quantity Selector -->
@@ -62,16 +103,20 @@
 
         <!-- Buttons -->
         <div class="flex gap-4">
-          <button class="bg-indigo-600 text-white px-6 py-3 rounded text-lg w-full md:w-auto hover:bg-indigo-700">Add to Cart</button>
-          <button class="border border-indigo-600 text-indigo-600 px-6 py-3 rounded text-lg w-full md:w-auto hover:bg-indigo-50">Buy Now</button>
+          <button class="bg-indigo-600 text-white px-6 py-3 rounded text-lg w-full md:w-auto hover:bg-indigo-700">
+            Add to Cart
+          </button>
+          <button class="border border-indigo-600 text-indigo-600 px-6 py-3 rounded text-lg w-full md:w-auto hover:bg-indigo-50">
+            Buy Now
+          </button>
         </div>
 
-        <!-- Extra Info -->
         <div class="mt-8 text-gray-700 space-y-2">
-          <p><strong>Category:</strong> Electronics</p>
-          <p><strong>Brand:</strong> AudioPro</p>
-          <p><strong>Warranty:</strong> 1 Year</p>
+          <p><strong>Brand:</strong> <?php echo $p['brand_id']; ?></p>
+          <p><strong>Category:</strong> <?php echo $p['category_id']; ?></p>
+          <p><strong>Stock:</strong> <?php echo $p['stock_qty']; ?></p>
         </div>
+
       </div>
     </div>
 
@@ -79,37 +124,10 @@
     <div class="mt-12">
       <h3 class="text-2xl font-bold mb-4">Product Description</h3>
       <p class="text-gray-700 leading-relaxed">
-        This premium wireless headphone delivers crystal-clear sound with deep bass and superior comfort.
-        Perfect for music lovers, gamers, and professionals. With long battery life and fast charging,
-        enjoy uninterrupted audio for hours.
+        <?php echo $p['long_description']; ?>
       </p>
     </div>
 
-    <!-- RELATED PRODUCTS -->
-    <div class="mt-12">
-      <h3 class="text-2xl font-bold mb-4">Related Products</h3>
-
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-        <div class="bg-white p-3 rounded shadow hover:shadow-lg transition cursor-pointer">
-          <div class="h-36 bg-gray-200 rounded mb-2"></div>
-          <h4 class="font-semibold">Bluetooth Speaker</h4>
-          <p class="text-indigo-600 font-bold">$149</p>
-        </div>
-
-        <div class="bg-white p-3 rounded shadow hover:shadow-lg transition cursor-pointer">
-          <div class="h-36 bg-gray-200 rounded mb-2"></div>
-          <h4 class="font-semibold">Noise Cancelling Earbuds</h4>
-          <p class="text-indigo-600 font-bold">$89</p>
-        </div>
-
-        <div class="bg-white p-3 rounded shadow hover:shadow-lg transition cursor-pointer">
-          <div class="h-36 bg-gray-200 rounded mb-2"></div>
-          <h4 class="font-semibold">Studio Microphone</h4>
-          <p class="text-indigo-600 font-bold">$199</p>
-        </div>
-      </div>
-    </div>
-  </div>
   </div>
 
   <!-- FOOTER -->
