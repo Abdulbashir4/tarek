@@ -97,87 +97,15 @@ include 'server_connection.php';
 <body class="bg-gray-100">
 
   <!-- HEADER -->
-  <header class="bg-white shadow sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-      <a href="#" class="text-2xl font-bold text-indigo-600">ShopPro</a>
-      <div class="hidden md:flex w-1/2">
-        <input type="text" placeholder="Search for products..." class="w-full border rounded-l-full py-2 px-4 outline-none focus:ring-2 focus:ring-indigo-500" />
-        <button class="bg-indigo-600 text-white px-4 rounded-r-full">Search</button>
-      </div>
-      <div class="flex items-center space-x-6 text-gray-700 text-xl">
-        <button>❤️</button>
-        <button onclick="window.location.href='cart.php'">🛒</button>
-        <button>👤</button>
-      </div>
-    </div>
-    <!-- HEADER MENU BAR -->
-  <nav class="cls01">
-    <div>
-        <ul>
-        <?php
-        
-        // 1️⃣ Load Categories
-        $categories = $conn->query("SELECT * FROM categories");
-
-        while ($cat = $categories->fetch_assoc()) {
-            $cat_id = $cat['category_id'];
-
-            echo '
-            <li class="group">
-                <a href="#">'.$cat['category_name'].' ▼</a>';
-
-            // 2️⃣ Load Subcategories
-            $sub_query = $conn->query("SELECT * FROM subcategories WHERE category_id=$cat_id");
-
-            echo '<ul>';
-
-            while ($sub = $sub_query->fetch_assoc()) {
-
-                $sub_id = $sub['subcategory_id'];
-
-                echo '
-                <li class="group-sub">
-                    <a href="#" class="cls02">'.$sub['subcategory_name'].' ►</a>';
-
-                // 3️⃣ Load Brands
-                $brand_query = $conn->query("SELECT * FROM brands WHERE subcategory_id=$sub_id");
-
-                echo '<ul>';
-
-                while ($brand = $brand_query->fetch_assoc()) {
-                    echo '
-                    <li>
-                        <a href="index.php?brand_id='.$brand['brand_id'].'">
-                            '.$brand['brand_name'].'
-                        </a>
-                    </li>';
-                }
-
-
-                echo '</ul></li>';
-            }
-
-            echo '</ul></li>';
-        }
-        ?>
-
-            <!-- Static Items -->
-            <li><a href="admin.php">Admin</a></li>
-            <li><a href="test.php">Test</a></li>
-            <li><a href="shop.php">Shop</a></li>
-        </ul>
-    </div>
-</nav>
-
-
-
-</header>
+  <?php
+  include 'header.php';
+  include 'menu_bar.php'; ?>
 
   <!-- MAIN WRAPPER -->
   <div class="max-w-7xl mx-auto mt-6 px-4 flex gap-6">
 
     <!-- SIDEBAR WITH FILTERS -->
-    <aside class="w-[220px] bg-white shadow rounded p-4 h-max sticky top-20 hidden md:block">
+    <aside class="w-[220px] bg-white shadow rounded p-4 h-max sticky top-40 hidden md:block">
       <h2 class="font-bold text-xl mb-4">Categories</h2>
       <ul class="space-y-3 mb-6 text-gray-700">
         <li><a href="#" class="block hover:text-indigo-600">📱 Phones</a></li>
@@ -231,7 +159,7 @@ include 'server_connection.php';
     <main class="flex-1">
 
       <!-- HERO BANNER -->
-      <section class="h-48 md:h-64 w-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow flex items-center justify-center text-white text-center p-6">
+      <section class="h-48 mt-35 md:h-64 w-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow flex items-center justify-center text-white text-center p-6">
         <div>
           <h1 class="text-3xl md:text-4xl font-bold">Welcome to ShopPro</h1>
           <p class="mt-2 text-lg">Find the best deals on top products!</p>
@@ -282,65 +210,6 @@ while($p = $product->fetch_assoc()){
     ';
 }
 ?>
-
-
-          <div class="bg-white shadow rounded p-3 hover:shadow-lg transition">
-            <div class="h-36 bg-gray-200 rounded"></div>
-            <h3 class="mt-3 font-semibold">Smart Phone X</h3>
-            <p class="text-indigo-600 font-bold">$499</p>
-            <button class="bg-indigo-600 text-white w-full py-1 mt-2 rounded">Add to Cart</button>
-          </div>
-
-          <div class="bg-white shadow rounded p-3 hover:shadow-lg transition">
-            <div class="h-36 bg-gray-200 rounded"></div>
-            <h3 class="mt-3 font-semibold">LED TV 45"</h3>
-            <p class="text-indigo-600 font-bold">$699</p>
-            <button class="bg-indigo-600 text-white w-full py-1 mt-2 rounded">Add to Cart</button>
-          </div>
-
-          <div class="bg-white shadow rounded p-3 hover:shadow-lg transition">
-            <div class="h-36 bg-gray-200 rounded"></div>
-            <h3 class="mt-3 font-semibold">Gaming Monitor</h3>
-            <p class="text-indigo-600 font-bold">$299</p>
-            <button class="bg-indigo-600 text-white w-full py-1 mt-2 rounded">Add to Cart</button>
-          </div>
-
-          <div class="bg-white shadow rounded p-3 hover:shadow-lg transition">
-            <div class="h-36 bg-gray-200 rounded"></div>
-            <h3 class="mt-3 font-semibold">Wireless Earbuds</h3>
-            <p class="text-indigo-600 font-bold">$99</p>
-            <button class="bg-indigo-600 text-white w-full py-1 mt-2 rounded">Add to Cart</button>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-          <div class="bg-white shadow rounded p-3 hover:shadow-lg transition">
-            <div class="h-36 bg-gray-200 rounded"></div>
-            <h3 class="mt-3 font-semibold">Smart Phone X</h3>
-            <p class="text-indigo-600 font-bold">$499</p>
-            <button class="bg-indigo-600 text-white w-full py-1 mt-2 rounded">Add to Cart</button>
-          </div>
-
-          <div class="bg-white shadow rounded p-3 hover:shadow-lg transition">
-            <div class="h-36 bg-gray-200 rounded"></div>
-            <h3 class="mt-3 font-semibold">LED TV 45"</h3>
-            <p class="text-indigo-600 font-bold">$699</p>
-            <button class="bg-indigo-600 text-white w-full py-1 mt-2 rounded">Add to Cart</button>
-          </div>
-
-          <div class="bg-white shadow rounded p-3 hover:shadow-lg transition">
-            <div class="h-36 bg-gray-200 rounded"></div>
-            <h3 class="mt-3 font-semibold">Gaming Monitor</h3>
-            <p class="text-indigo-600 font-bold">$299</p>
-            <button class="bg-indigo-600 text-white w-full py-1 mt-2 rounded">Add to Cart</button>
-          </div>
-
-          <div class="bg-white shadow rounded p-3 hover:shadow-lg transition">
-            <div class="h-36 bg-gray-200 rounded"></div>
-            <h3 class="mt-3 font-semibold">Wireless Earbuds</h3>
-            <p class="text-indigo-600 font-bold">$99</p>
-            <button class="bg-indigo-600 text-white w-full py-1 mt-2 rounded">Add to Cart</button>
-          </div>
-        </div>
       </section>
 
     </main>

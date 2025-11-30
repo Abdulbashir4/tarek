@@ -1,5 +1,5 @@
 <?php
-// shop.php
+include "server_connection.php";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -12,22 +12,11 @@
 <body class="bg-gray-100">
 
   <!-- HEADER -->
-  <header class="bg-white shadow p-4 flex justify-between items-center sticky top-0 z-50">
-    <h1 class="text-2xl font-bold text-indigo-600">ShopPro</h1>
-    <nav class="hidden md:block">
-      <ul class="flex space-x-6 text-gray-700 font-medium">
-        <li><a href="index.php" class="hover:text-indigo-600">Home</a></li>
-        <li><a href="shop.php" class="hover:text-indigo-600">Shop</a></li>
-        <li><a href="admin.php" class="hover:text-indigo-600">Admin</a></li>
-        <li><a href="#" class="hover:text-indigo-600">Contact</a></li>
-      </ul>
-
-      
-    </nav>
-    <button class="md:hidden">☰</button>
+  <header >
+      <?php include 'header.php'; ?>
   </header>
 
-  <div class="max-w-7xl mx-auto p-4 mt-6 flex gap-6">
+  <div class="max-w-7xl mx-auto p-4 mt-20 flex gap-6">
     <div class="flex flex-col">
     <!-- CATEGORY SIDEBAR -->
     <aside class="w-64 bg-white shadow rounded p-4 h-max hidden md:block">

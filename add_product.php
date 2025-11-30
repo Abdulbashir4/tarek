@@ -172,7 +172,7 @@ button:hover{
         <label>প্রডাক্ট ইমেজ *</label>
         <input type="file" name="product_image" required>
     </div>
-        <div class="flex">
+        <div class="flex mb-2">
         <label>Gallery Image</label>
         <input type="file"  name="product_gallery_image[]" multiple>
         </div>

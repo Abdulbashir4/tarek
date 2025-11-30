@@ -32,15 +32,8 @@ $p = $query->fetch_assoc();
 <body class="bg-gray-100">
 
   <!-- HEADER -->
-  <header class="bg-white shadow p-4 flex justify-between items-center sticky top-0 z-50">
-    <h1 class="text-2xl font-bold text-indigo-600">ShopPro</h1>
-    <nav class="hidden md:block">
-      <ul class="flex space-x-6 text-gray-700 font-medium">
-        <li><a href="index.php" class="hover:text-indigo-600">Home</a></li>
-        <li><a href="shop.php" class="hover:text-indigo-600">Shop</a></li>
-        <li><a href="admin.php" class="hover:text-indigo-600">Admin</a></li>
-      </ul>
-    </nav>
+  <header >
+      <?php include 'header.php'; ?>
   </header>
 
   <!-- PRODUCT DETAILS WRAPPER -->
@@ -56,30 +49,50 @@ $p = $query->fetch_assoc();
      class="rounded-xl shadow-lg mx-auto mb-10 w-[300px] h-[300px] object-cover" />
 
         <!-- extra images (optional) -->
-        <div class="grid grid-cols-4 gap-3">
+        <div class="relative">
 
-        <?php
-        // যদি আপনার product_images টেবিল থাকে, এখানে লোড করবেন  
-        $gallery = [];
+  <!-- LEFT ARROW -->
+  <button 
+    onclick="scrollGalleryLeft()" 
+    class="absolute left-0 top-1/2 -translate-y-1/2 bg-indigo-400 shadow p-2 rounded-full hover:bg-indigo-500 z-10">
+      <
+  </button>
 
-if (!empty($p['gallery_images'])) {
-    $gallery = json_decode($p['gallery_images'], true);
-}
+  <!-- Scrollable gallery container -->
+  <div id="galleryWrapper" 
+       class="flex gap-3 overflow-x-auto scroll-smooth no-scrollbar w-full px-10">
 
-if (!empty($gallery)) {
-    foreach ($gallery as $gimg) {
-        echo '
-        <img onclick="changeMainImage(\'uploads/products/'.$gimg.'\')" 
-             src="uploads/products/'.$gimg.'" 
-             class="rounded-lg shadow cursor-pointer hover:opacity-80 w-20 h-20 object-cover" />
-        ';
+    <?php
+    $gallery = [];
+
+    if (!empty($p['gallery_images'])) {
+        $gallery = json_decode($p['gallery_images'], true);
     }
-} else {
-    echo "<p class='text-gray-500'>No gallery images</p>";
-}
-        ?>
 
-        </div>
+    if (!empty($gallery)) {
+        foreach ($gallery as $gimg) {
+            echo '
+            <img 
+              onclick="changeMainImage(\'uploads/products/'.$gimg.'\')" 
+              src="uploads/products/'.$gimg.'" 
+              class="rounded-lg shadow cursor-pointer hover:opacity-80 w-20 h-20 object-cover"
+            />';
+        }
+    } else {
+        echo "<p class='text-gray-500'>No gallery images</p>";
+    }
+    ?>
+  </div>
+
+  <!-- RIGHT ARROW -->
+  <button 
+    onclick="scrollGalleryRight()" 
+    class="absolute right-0 top-1/2 -translate-y-1/2 bg-indigo-400 shadow p-2 rounded-full hover:bg-indigo-500">
+      >
+  </button>
+
+</div>
+
 
       </div>
 
@@ -147,6 +160,16 @@ if (!empty($gallery)) {
 <script>
   function changeMainImage(imagePath) {
     document.getElementById("mainImage").src = imagePath;
+}
+
+function scrollGalleryRight() {
+    let box = document.getElementById("galleryWrapper");
+    box.scrollLeft += 150; // Scroll to right
+}
+
+function scrollGalleryLeft() {
+    let box = document.getElementById("galleryWrapper");
+    box.scrollLeft -= 150; // Scroll to left
 }
 </script>
 </body>

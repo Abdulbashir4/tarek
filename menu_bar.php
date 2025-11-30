@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body>
+    <header class="bg-white shadow sticky top-0 z-50">
+    
+    <!-- HEADER MENU BAR -->
+  <nav class="cls01 mt-10 fixed w-full z-50">
+    
+    <div>
+        <ul>
+        <?php
+        
+        // 1️⃣ Load Categories
+        $categories = $conn->query("SELECT * FROM categories");
+
+        while ($cat = $categories->fetch_assoc()) {
+            $cat_id = $cat['category_id'];
+
+            echo '
+            <li class="group">
+                <a href="#">'.$cat['category_name'].' ▼</a>';
+
+            // 2️⃣ Load Subcategories
+            $sub_query = $conn->query("SELECT * FROM subcategories WHERE category_id=$cat_id");
+
+            echo '<ul>';
+
+            while ($sub = $sub_query->fetch_assoc()) {
+
+                $sub_id = $sub['subcategory_id'];
+
+                echo '
+                <li class="group-sub">
+                    <a href="#" class="cls02">'.$sub['subcategory_name'].' ►</a>';
+
+                // 3️⃣ Load Brands
+                $brand_query = $conn->query("SELECT * FROM brands WHERE subcategory_id=$sub_id");
+
+                echo '<ul>';
+
+                while ($brand = $brand_query->fetch_assoc()) {
+                    echo '
+                    <li>
+                        <a href="index.php?brand_id='.$brand['brand_id'].'">
+                            '.$brand['brand_name'].'
+                        </a>
+                    </li>';
+                }
+
+
+                echo '</ul></li>';
+            }
+
+            echo '</ul></li>';
+        }
+        ?>
+
+            <!-- Static Items -->
+            <li><a href="admin.php">Admin</a></li>
+            <li><a href="test.php">Test</a></li>
+            <li><a href="shop.php">Shop</a></li>
+        </ul>
+    </div>
+</nav>
+
+
+
+</header>
+    
+</body>
+</html>

@@ -10,7 +10,7 @@ include 'server_connection.php';
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body>
-    <div class="mt-10">
+    <div class="mt-10 px-8">
 
       <div class="mt-10">
         <h2 class="mb-4 text-xl font-bold">Add Category</h2>
