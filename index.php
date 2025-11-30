@@ -192,23 +192,32 @@ include 'server_connection.php';
 
 while($p = $product->fetch_assoc()){
     echo '
-    <a href="product.php?product_id='.$p['product_id'].'" 
-       class="block bg-white shadow rounded p-3 hover:shadow-lg transition">
-        
-        <div class="h-36 bg-gray-200 rounded">
-            <img src="uploads/products/'.$p['thumbnail'].'" 
-                 class="w-full h-full object-cover rounded"/>
-        </div>
-        
-        <h3 class="mt-3 font-semibold">'. $p['product_name'] .'</h3>
+    <div class="bg-white shadow rounded p-3 hover:shadow-lg transition">
 
-        <button class="bg-indigo-600 text-white w-full py-1 mt-2 rounded">
+        <a href="product.php?product_id='.$p['product_id'].'">
+            <div class="h-36 bg-gray-200 rounded">
+                <img src="uploads/products/'.$p['thumbnail'].'" 
+                     class="w-full h-full object-cover rounded"/>
+            </div>
+        </a>
+
+        <h3 class="mt-3 font-semibold">'.$p['product_name'].'</h3>
+
+        <button 
+            class="addToCart bg-indigo-600 text-white w-full py-1 mt-2 rounded block text-center"
+            data-id="'.$p['product_id'].'"
+            data-name="'.htmlspecialchars($p['product_name']).'"
+            data-price="'.$p['price'].'"
+        >
             Add to Cart
         </button>
 
-    </a>
+    </div>
     ';
 }
+
+
+
 ?>
       </section>
 
@@ -272,6 +281,37 @@ while($p = $product->fetch_assoc()){
   <footer class="bg-gray-800 text-white mt-10 py-6 text-center">
     <p>© 2025 ShopPro — All Rights Reserved.</p>
   </footer>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    // সব Add to Cart বাটন সিলেক্ট
+    document.querySelectorAll(".addToCart").forEach(button => {
+        button.addEventListener("click", function(){
+
+            let id = this.dataset.id;
+            let name = this.dataset.name;
+            let price = this.dataset.price;
+
+            fetch("add_to_cart.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: `id=${id}&name=${encodeURIComponent(name)}&price=${price}`
+            })
+            .then(res => res.json())
+            .then(data => {
+
+                if(data.status === "success"){
+                    document.getElementById("cartCount").innerText = data.cartCount;
+                }
+            });
+
+        });
+    });
+
+});
+</script>
 
 </body>
 </html>

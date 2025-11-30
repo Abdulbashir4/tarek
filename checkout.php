@@ -1,3 +1,14 @@
+<?php
+session_start();
+include "server_connection.php";
+
+// যদি কার্ট একদম খালি হয় → Checkout এ আসতে দেবে না
+if(!isset($_SESSION['cart']) || count($_SESSION['cart']) == 0){
+    echo "<h2 style='text-align:center; margin-top:50px;'>Your cart is empty!</h2>";
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,24 +41,27 @@
       <div>
         <h3 class="text-xl font-semibold mb-4">Billing Details</h3>
 
+        <form action="place_order.php" method="POST">
+
         <div class="space-y-4">
-          <input type="text" placeholder="Full Name" class="w-full border px-3 py-2 rounded" />
-          <input type="email" placeholder="Email Address" class="w-full border px-3 py-2 rounded" />
-          <input type="text" placeholder="Phone Number" class="w-full border px-3 py-2 rounded" />
-          <input type="text" placeholder="Address" class="w-full border px-3 py-2 rounded" />
+          <input name="name" type="text" placeholder="Full Name" required class="w-full border px-3 py-2 rounded" />
+          <input name="email" type="email" placeholder="Email Address" required class="w-full border px-3 py-2 rounded" />
+          <input name="phone" type="text" placeholder="Phone Number" required class="w-full border px-3 py-2 rounded" />
+          <input name="address" type="text" placeholder="Address" required class="w-full border px-3 py-2 rounded" />
 
           <div class="grid grid-cols-2 gap-4">
-            <input type="text" placeholder="City" class="border px-3 py-2 rounded" />
-            <input type="text" placeholder="Postal Code" class="border px-3 py-2 rounded" />
+            <input name="city" type="text" placeholder="City" required class="border px-3 py-2 rounded" />
+            <input name="zip" type="text" placeholder="Postal Code" required class="border px-3 py-2 rounded" />
           </div>
 
-          <select class="w-full border px-3 py-2 rounded">
-            <option>Select Country</option>
+          <select name="country" required class="w-full border px-3 py-2 rounded">
+            <option value="">Select Country</option>
             <option>Bangladesh</option>
             <option>India</option>
             <option>USA</option>
           </select>
         </div>
+
       </div>
 
       <!-- ORDER SUMMARY -->
@@ -55,22 +69,30 @@
         <h3 class="text-xl font-semibold mb-4">Order Summary</h3>
 
         <div class="bg-gray-50 p-4 rounded-lg shadow">
-          <div class="flex justify-between mb-3">
-            <span>Premium Wireless Headphones</span>
-            <span>$299</span>
-          </div>
+          <?php
+          $total = 0;
 
-          <div class="flex justify-between mb-3">
-            <span>Bluetooth Speaker</span>
-            <span>$149</span>
-          </div>
+          foreach($_SESSION['cart'] as $item){
+              $lineTotal = $item['price'] * $item['qty'];
+              $total += $lineTotal;
+
+              echo '
+              <div class="flex justify-between mb-3">
+                <span>'.$item['name'].' (x'.$item['qty'].')</span>
+                <span>$'.$lineTotal.'</span>
+              </div>
+              ';
+          }
+          ?>
 
           <hr class="my-4" />
 
           <div class="flex justify-between text-lg font-bold">
             <span>Total:</span>
-            <span>$448</span>
+            <span>$<?php echo $total; ?></span>
           </div>
+
+          <input type="hidden" name="total_amount" value="<?php echo $total; ?>">
         </div>
 
         <!-- PAYMENT METHODS -->
@@ -79,33 +101,32 @@
 
           <div class="space-y-3 bg-gray-50 p-4 rounded-lg shadow">
             <label class="flex items-center space-x-3">
-              <input type="radio" name="payment" checked class="w-5 h-5" />
+              <input type="radio" name="payment_method" value="COD" checked class="w-5 h-5" />
               <span>💵 Cash on Delivery</span>
             </label>
 
             <label class="flex items-center space-x-3">
-              <input type="radio" name="payment" class="w-5 h-5" />
+              <input type="radio" name="payment_method" value="Card" class="w-5 h-5" />
               <span>💳 Credit / Debit Card</span>
             </label>
 
             <label class="flex items-center space-x-3">
-              <input type="radio" name="payment" class="w-5 h-5" />
+              <input type="radio" name="payment_method" value="Bkash" class="w-5 h-5" />
               <span>📱 bKash</span>
             </label>
 
             <label class="flex items-center space-x-3">
-              <input type="radio" name="payment" class="w-5 h-5" />
+              <input type="radio" name="payment_method" value="Nagad" class="w-5 h-5" />
               <span>📱 Nagad</span>
-            </label>
-
-            <label class="flex items-center space-x-3">
-              <input type="radio" name="payment" class="w-5 h-5" />
-              <span>💳 PayPal</span>
             </label>
           </div>
         </div>
 
-        <button onclick="window.location.href='payment_succecfull.php'" class="mt-6 w-full bg-indigo-600 text-white py-3 rounded text-lg hover:bg-indigo-700">Place Order</button>
+        <button type="submit" class="mt-6 w-full bg-indigo-600 text-white py-3 rounded text-lg hover:bg-indigo-700">
+          Place Order
+        </button>
+
+        </form>
       </div>
     </div>
   </div>

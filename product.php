@@ -121,14 +121,26 @@ $p = $query->fetch_assoc();
         <!-- Quantity Selector -->
         <div class="flex items-center space-x-4 mb-6">
           <label class="font-semibold text-gray-700">Quantity:</label>
-          <input type="number" value="1" min="1" class="border rounded px-3 py-1 w-20" />
+          <input 
+    type="number" 
+    id="qtyInput" 
+    value="1" 
+    min="1" 
+    class="border rounded px-3 py-1 w-20" 
+/>
+
         </div>
 
         <!-- Buttons -->
         <div class="flex gap-4">
-          <button class="bg-indigo-600 text-white px-6 py-3 rounded text-lg w-full md:w-auto hover:bg-indigo-700">
-            Add to Cart
-          </button>
+          <button 
+    id="addSingleCart"
+    data-id="<?php echo $p['product_id']; ?>"
+    class="bg-indigo-600 text-white px-6 py-3 rounded text-lg w-full md:w-auto hover:bg-indigo-700">
+    Add to Cart
+</button>
+
+
           <button class="border border-indigo-600 text-indigo-600 px-6 py-3 rounded text-lg w-full md:w-auto hover:bg-indigo-50">
             Buy Now
           </button>
@@ -171,6 +183,41 @@ function scrollGalleryLeft() {
     let box = document.getElementById("galleryWrapper");
     box.scrollLeft -= 150; // Scroll to left
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const addBtn = document.getElementById("addSingleCart");
+
+    addBtn.addEventListener("click", function(){
+
+        let id = this.dataset.id;
+        let qty = document.getElementById("qtyInput").value;
+
+        fetch("add_to_cart.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: `id=${id}&qty=${qty}`
+        })
+        .then(res => res.json())
+        .then(data => {
+
+            if(data.status === "success"){
+
+                // হেডারের কার্ট কাউন্টার আপডেট
+                if(document.getElementById("cartCount")){
+                    document.getElementById("cartCount").innerText = data.cartCount;
+                }
+
+                alert("Product added to cart!");
+            }
+        });
+
+    });
+
+});
+
 </script>
 </body>
 </html>
