@@ -17,7 +17,7 @@ include 'server_connection.php';
     <button class="bg-indigo-600 text-white px-4 py-1 rounded">Logout</button>
   </header>
 
-  <div class="flex mt-6 p-4 gap-4">
+  <div class="flex p-4 gap-4">
 
     <!-- SIDEBAR -->
     <aside class="w-60 bg-white shadow rounded p-4 h-max">
