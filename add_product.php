@@ -5,6 +5,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Product Add</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <style>
 
 body{
@@ -171,6 +172,10 @@ button:hover{
         <label>প্রডাক্ট ইমেজ *</label>
         <input type="file" name="product_image" required>
     </div>
+        <div class="flex">
+        <label>Gallery Image</label>
+        <input type="file"  name="product_gallery_image[]" multiple>
+        </div>
 
     <button type="submit">সাবমিট করুন</button>
 

@@ -51,22 +51,32 @@ $p = $query->fetch_assoc();
       <div>
 
         <!-- main image -->
-        <img src="uploads/products/<?php echo $p['thumbnail']; ?>" 
-             class="rounded-xl shadow-lg mx-auto mb-10 w-[300px] h-[300px] object-cover" />
+        <img id="mainImage" 
+     src="uploads/products/<?php echo $p['thumbnail']; ?>" 
+     class="rounded-xl shadow-lg mx-auto mb-10 w-[300px] h-[300px] object-cover" />
 
         <!-- extra images (optional) -->
         <div class="grid grid-cols-4 gap-3">
 
         <?php
         // যদি আপনার product_images টেবিল থাকে, এখানে লোড করবেন  
-        // আপাতত একটিই image দেখানোর জন্য লুপ ছাড়া example:
+        $gallery = [];
 
+if (!empty($p['gallery_images'])) {
+    $gallery = json_decode($p['gallery_images'], true);
+}
+
+if (!empty($gallery)) {
+    foreach ($gallery as $gimg) {
         echo '
-          <img src="uploads/products/'.$p['thumbnail'].'" class="rounded-lg shadow cursor-pointer hover:opacity-80" />
-          <img src="uploads/products/'.$p['thumbnail'].'" class="rounded-lg shadow cursor-pointer hover:opacity-80" />
-          <img src="uploads/products/'.$p['thumbnail'].'" class="rounded-lg shadow cursor-pointer hover:opacity-80" />
-          <img src="uploads/products/'.$p['thumbnail'].'" class="rounded-lg shadow cursor-pointer hover:opacity-80" />
+        <img onclick="changeMainImage(\'uploads/products/'.$gimg.'\')" 
+             src="uploads/products/'.$gimg.'" 
+             class="rounded-lg shadow cursor-pointer hover:opacity-80 w-20 h-20 object-cover" />
         ';
+    }
+} else {
+    echo "<p class='text-gray-500'>No gallery images</p>";
+}
         ?>
 
         </div>
@@ -134,6 +144,10 @@ $p = $query->fetch_assoc();
   <footer class="bg-gray-800 text-white mt-10 py-6 text-center">
     <p>© 2025 ShopPro — All Rights Reserved.</p>
   </footer>
-
+<script>
+  function changeMainImage(imagePath) {
+    document.getElementById("mainImage").src = imagePath;
+}
+</script>
 </body>
 </html>

@@ -13,6 +13,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
     $stock_qty          = $_POST['stock_qty'];
     $short_description  = $_POST['short_description'];
     $long_description   = $_POST['long_description'];
+    
 
 
     // -----------------------------
@@ -33,14 +34,44 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
     // Move file to folder
     move_uploaded_file($tmp, $folder . $new_image_name);
 
+    
+// MULTIPLE GALLERY IMAGE UPLOAD
+    // --------------------------------
+    $gallery_images = [];  // Array where all gallery images will be stored
+
+    if(isset($_FILES['product_gallery_image']['name'])){
+        
+        $total_files = count($_FILES['product_gallery_image']['name']);
+        
+        for($i = 0; $i < $total_files; $i++){
+
+            $g_name = $_FILES['product_gallery_image']['name'][$i];
+            $g_tmp  = $_FILES['product_gallery_image']['tmp_name'][$i];
+
+            if($g_name != ""){
+                $g_new_name = time() . "_" . rand(1000,9999) . "_" . $g_name;
+                move_uploaded_file($g_tmp, $folder . $g_new_name);
+
+                // Add to array
+                $gallery_images[] = $g_new_name;
+            }
+        }
+    }
+
+    // Convert gallery array → JSON
+    $gallery_json = json_encode($gallery_images);
+
+
+
+
 
     // ----------------------------------------
     // Insert Query
     // ----------------------------------------
     $sql = "INSERT INTO products 
-    (product_name, category_id, subcategory_id, brand_id, price, discount_price, stock_qty, short_description, long_description, thumbnail)
+    (product_name, category_id, subcategory_id, brand_id, price, discount_price, stock_qty, short_description, long_description, thumbnail, gallery_images)
     VALUES
-    ('$product_name', '$category_id', '$subcategory_id', '$brand_id', '$price', '$discount_price', '$stock_qty', '$short_description', '$long_description', '$new_image_name')";
+    ('$product_name', '$category_id', '$subcategory_id', '$brand_id', '$price', '$discount_price', '$stock_qty', '$short_description', '$long_description', '$new_image_name', '$gallery_json')";
 
 
     if($conn->query($sql)){
