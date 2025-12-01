@@ -67,7 +67,7 @@
         <a class="border-1 block px-4 py-2 rounded mb-2 hover:bg-gray-500 hover:text-white" href="admin_orders.php" target="content_frame">📦 Order List</a>
         <a class="border-1 block px-4 py-2 rounded mb-2 hover:bg-gray-500 hover:text-white" href="add_catagory_sub&brand.php" target="content_frame">🗃 Add Category</a>
         <a class="border-1 block px-4 py-2 rounded mb-2 hover:bg-gray-500 hover:text-white" href="brand-add.php" target="content_frame">🏷 Add Brand</a>
-        <a class="border-1 block px-4 py-2 rounded mb-2 hover:bg-gray-500 hover:text-white" href="orders.php" target="content_frame">🧾 Orders</a>
+        <a class="border-1 block px-4 py-2 rounded mb-2 hover:bg-gray-500 hover:text-white" href="order_tracking.php" target="content_frame">🧾 Orders tracking</a>
     </div>
 
     <!-- BODY / CONTENT -->

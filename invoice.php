@@ -83,6 +83,12 @@ body { font-family: 'Arial'; color:#333; }
     <!-- Header -->
     <div class="header">
         <div class="logo">ShopPro Invoice</div>
+            <a 
+  href="invoice_pdf.php?order_id=<?php echo $order_id; ?>" 
+  class="inline-block mt-4 px-5 py-2 bg-indigo-600 text-white font-semibold rounded shadow hover:bg-indigo-700 transition"
+>
+  ⬇ Download Invoice (PDF)
+</a>
 
         <div>
             <img src="<?php echo $qr_link; ?>" width="100">
@@ -158,6 +164,7 @@ body { font-family: 'Arial'; color:#333; }
             <td>$<?php echo $grandTotal; ?></td>
         </tr>
     </table>
+    
 
     <!-- Footer -->
     <div class="footer">
