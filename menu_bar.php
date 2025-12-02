@@ -6,11 +6,11 @@
     <title>Document</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body>
+<body >
     <header class="bg-white shadow sticky top-0 z-50">
     
     <!-- HEADER MENU BAR -->
-  <nav class="cls01 mt-10 fixed w-full z-50">
+  <nav class="cls01 mt-10 fixed w-full z-50 hidden md:block">
     
     <div>
         <ul>
@@ -24,7 +24,7 @@
 
             echo '
             <li class="group">
-                <a href="#">'.$cat['category_name'].' ▼</a>';
+                <a href="index.php?category_id='.$cat['category_id'].'">'.$cat['category_name'].' ▼</a>';
 
             // 2️⃣ Load Subcategories
             $sub_query = $conn->query("SELECT * FROM subcategories WHERE category_id=$cat_id");
@@ -37,8 +37,7 @@
 
                 echo '
                 <li class="group-sub">
-                    <a href="#" class="cls02">'.$sub['subcategory_name'].' ►</a>';
-
+                    <a href="index.php?subcategory_id='.$sub['subcategory_id'].'" class="cls02">'.$sub['subcategory_name'].' ►</a>';
                 // 3️⃣ Load Brands
                 $brand_query = $conn->query("SELECT * FROM brands WHERE subcategory_id=$sub_id");
 
