@@ -1,5 +1,4 @@
 <?php 
-session_start();
 include "server_connection.php";
 ?>
 <header class="bg-white shadow fixed top-0 w-full z-50">

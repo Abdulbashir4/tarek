@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 ?>
@@ -97,6 +96,7 @@ session_start();
   <?php
     include 'header.php';
     include 'menu_bar.php';
+    // ধরে নিচ্ছি $conn কানেকশন header বা অন্য কোথাও থেকে এসেছে
   ?>
 
   <!-- MAIN WRAPPER -->
@@ -104,6 +104,24 @@ session_start();
 
     <!-- SIDEBAR WITH FILTERS -->
     <aside class="w-[220px] bg-white shadow rounded p-4 h-max sticky top-40 hidden md:block">
+      <div>
+        <h2 class="font-bold text-xl mb-4">Categories</h2>
+
+      <?php
+        $categories = $conn->query("SELECT * FROM categories");
+        echo '<ul class="space-y-2 text-gray-700">';
+
+        while ($cat = $categories->fetch_assoc()) {
+            echo '<li>
+                    <a href="index.php?category_id='.$cat['category_id'].'"
+                       class="block hover:text-indigo-600">
+                       📂 '.$cat['category_name'].'
+                    </a>
+                  </li>';
+        }
+        echo '</ul>';
+      ?>
+      </div>
 
       <!-- FILTERS -->
       <div class="mb-6 bg-white p-4 rounded shadow mt-3">
@@ -123,6 +141,7 @@ session_start();
             Up to $<span id="priceText"><?php echo isset($_GET['price']) ? (int)$_GET['price'] : 500; ?></span>
         </p>
       </div>
+      
     </aside>
 
     <!-- MAIN CONTENT -->
@@ -169,7 +188,6 @@ session_start();
               $sql = "SELECT * FROM products";
           }
           
-
           $product = $conn->query($sql);
 
           // যদি কোনো প্রডাক্ট না থাকে
@@ -179,32 +197,83 @@ session_start();
                     </p>';
           }
 
-          // প্রডাক্ট লুপ
-          while($p = $product->fetch_assoc()){
-              echo '
-              <div class="bg-white shadow rounded p-3 hover:shadow-lg transition">
+          // প্রডাক্ট লুপ – এখানে Tailwind standard product card
+          while($p = $product->fetch_assoc()) {
 
-                  <a href="product.php?product_id='.$p['product_id'].'">
-                      <div class="h-36 bg-gray-200 rounded">
-                          <img src="uploads/products/'.$p['thumbnail'].'" 
-                               class="w-full h-full object-cover rounded"/>
-                      </div>
-                  </a>
+     $name = htmlspecialchars($p['product_name'], ENT_QUOTES, 'UTF-8');
+    $price = $p['price'];
+    $dis_price = $p['discount_price'];
+    $oldPrice = $price + $dis_price;
+    $discount_price =number_format( ($dis_price/$oldPrice)*100,1);
+     // 15% বেশি ধরে পুরনো দাম
+    $priceForm = number_format($price, 2);
+    $oldPriceForm = number_format($oldPrice, 2);
 
-                  <h3 class="mt-3 font-semibold">'.$p['product_name'].'</h3>
+echo '
+<div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group">
 
-                  <button 
-                      class="addToCart bg-indigo-600 text-white w-full py-1 mt-2 rounded block text-center"
-                      data-id="'.$p['product_id'].'"
-                      data-name="'.htmlspecialchars($p['product_name']).'"
-                      data-price="'.$p['price'].'"
-                  >
-                      Add to Cart
-                  </button>
+    <!-- IMAGE -->
+    <a href="product.php?product_id='.$p['product_id'].'">
+        <div class="relative h-40 sm:h-48 bg-gray-100 overflow-hidden">
+            <img 
+                src="uploads/products/'.$p['thumbnail'].'"
+                class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                alt="'.$name.'"
+            />
 
-              </div>
-              ';
-          }
+            <!-- DISCOUNT BADGE -->
+            <span class="absolute top-3 left-3 bg-red-600 text-white text-xs px-2 py-1 rounded-md shadow">
+                '.$discount_price.'% OFF
+            </span>
+        </div>
+    </a>
+
+    <!-- CONTENT -->
+    <div class="p-4">
+
+        <!-- PRODUCT NAME -->
+        <h3 class="text-base font-semibold text-gray-800 leading-snug line-clamp-2 min-h-[48px]">
+            '.$name.'
+        </h3>
+
+        <!-- RATING -->
+        <div class="flex items-center mt-2 text-yellow-400 text-sm">
+            ★★★★☆
+            <span class="text-gray-500 ml-2 text-xs">4.1</span>
+        </div>
+
+        <!-- PRICE -->
+        <div class="mt-3">
+            <span class="text-lg font-bold text-indigo-600">$'.$priceForm.'</span>
+            <span class="text-gray-400 line-through ml-2">$'.$oldPriceForm.'</span>
+        </div>
+
+        <!-- BUTTONS -->
+        <div class="mt-4 flex gap-2">
+
+            <!-- VIEW DETAILS -->
+            <a href="product.php?product_id='.$p['product_id'].'"
+                class="flex-1 border border-indigo-600 text-indigo-600 text-center py-2 rounded-lg font-medium hover:bg-indigo-50 transition">
+                View Details
+            </a>
+
+            <!-- ADD TO CART -->
+            <button 
+                class="addToCart flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-medium transition"
+                data-id="'.$p['product_id'].'"
+                data-name="'.$name.'"
+                data-price="'.$price.'"
+            >
+                Add to Cart
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+';
+}
         ?>
         </div> <!-- end grid -->
       </section>
@@ -264,14 +333,15 @@ session_start();
 
     </div>
   </section>
-<?php include "bottom_navigation_bar.php" ?>
+
+  <?php include "bottom_navigation_bar.php" ?>
+
   <!-- FOOTER -->
   <footer class="bg-gray-800 text-white mt-10 py-6 text-center md:h-20 h-5">
     <p>© 2025 ShopPro — All Rights Reserved.</p>
   </footer>
 
 <script>
- 
 document.addEventListener("DOMContentLoaded", () => {
 
     // সব Add to Cart বাটন সিলেক্ট

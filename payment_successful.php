@@ -31,20 +31,11 @@ $od = $order->fetch_assoc();
 <body class="bg-gray-100">
 
 <!-- HEADER -->
-<header class="bg-white shadow p-4 flex justify-between items-center sticky top-0 z-50">
-    <h1 class="text-2xl font-bold text-indigo-600">ShopPro</h1>
-    <nav class="hidden md:block">
-      <ul class="flex space-x-6 text-gray-700 font-medium">
-        <li><a href="index.php" class="hover:text-indigo-600">Home</a></li>
-        <li><a href="shop.php" class="hover:text-indigo-600">Shop</a></li>
-        <li><a href="cart.php" class="hover:text-indigo-600">Cart</a></li>
-      </ul>
-    </nav>
-</header>
+<?php include 'header.php'; ?>
 
 
 <!-- SUCCESS BLOCK -->
-<div class="max-w-3xl mx-auto p-8 mt-12 bg-white shadow-lg rounded-lg text-center">
+<div class="max-w-3xl mx-auto p-8 mt-30 bg-white shadow-lg rounded-lg text-center">
 
     <div class="text-green-600 text-6xl mb-4">✔</div>
 

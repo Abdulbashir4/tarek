@@ -1,5 +1,7 @@
 <?php
+session_start();
 include "server_connection.php";
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,94 +23,79 @@ include "server_connection.php";
   <div class="flex flex-col">
 
     <!-- CATEGORY -->
-    <!-- CATEGORY -->
-<aside class="w-64 bg-white shadow rounded p-4 h-max hidden md:block">
-  <h2 class="font-bold text-xl mb-4">Categories</h2>
+    <aside class="w-64 bg-white shadow rounded p-4 h-max hidden md:block">
+      <h2 class="font-bold text-xl mb-4">Categories</h2>
 
-  <?php
-    $categories = $conn->query("SELECT * FROM categories");
-    echo '<ul class="space-y-2 text-gray-700">';
+      <?php
+        $categories = $conn->query("SELECT * FROM categories");
+        echo '<ul class="space-y-2 text-gray-700">';
 
-    while ($cat = $categories->fetch_assoc()) {
-        echo '<li>
-                <a href="shop.php?category_id='.$cat['category_id'].'"
-                   class="block hover:text-indigo-600">
-                   📂 '.$cat['category_name'].'
-                </a>
-              </li>';
-    }
-    echo '</ul>';
-  ?>
-</aside>
-
+        while ($cat = $categories->fetch_assoc()) {
+            echo '<li>
+                    <a href="shop.php?category_id='.$cat['category_id'].'"
+                       class="block hover:text-indigo-600">
+                       📂 '.$cat['category_name'].'
+                    </a>
+                  </li>';
+        }
+        echo '</ul>';
+      ?>
+    </aside>
 
     <!-- SUBCATEGORY -->
-    <!-- SUBCATEGORY -->
-<aside class="w-64 mt-2 bg-white shadow rounded p-4 h-max hidden md:block">
-  <h2 class="font-bold text-xl mb-4">Sub Category</h2>
+    <aside class="w-64 mt-2 bg-white shadow rounded p-4 h-max hidden md:block">
+      <h2 class="font-bold text-xl mb-4">Sub Category</h2>
 
-  <?php
-    if (!empty($_GET['category_id'])) {
+      <?php
+        if (!empty($_GET['category_id'])) {
+            $cid = (int)$_GET['category_id'];
+            $subcategories = $conn->query("SELECT * FROM subcategories WHERE category_id=$cid");
+        } else {
+            $subcategories = $conn->query("SELECT * FROM subcategories");
+        }
 
-        // Load subcategories under selected category
-        $cid = (int)$_GET['category_id'];
-        $subcategories = $conn->query("SELECT * FROM subcategories WHERE category_id=$cid");
+        echo '<select class="w-full border rounded px-2 py-1 mt-1"
+                onchange="redirectWithParam(\'subcategory_id\', this.value)">';
 
-    } else {
-        // Load all subcategories
-        $subcategories = $conn->query("SELECT * FROM subcategories");
-    }
+        echo '<option value="">Select subcategory</option>';
 
-    echo '<select class="w-full border rounded px-2 py-1 mt-1"
-            onchange="redirectWithParam(\'subcategory_id\', this.value)">';
+        while ($sub = $subcategories->fetch_assoc()) {
+            echo '<option value="'.$sub['subcategory_id'].'">'.$sub['subcategory_name'].'</option>';
+        }
 
-    echo '<option value="">Select subcategory</option>';
+        echo '</select>';
+      ?>
+    </aside>
 
-    while ($sub = $subcategories->fetch_assoc()) {
-        echo '<option value="'.$sub['subcategory_id'].'">'.$sub['subcategory_name'].'</option>';
-    }
-
-    echo '</select>';
-  ?>
-</aside>
-
-
-    <!-- BRAND -->
     <!-- BRAND FILTER -->
-<aside class="w-64 mt-2 bg-white shadow rounded p-4 h-max hidden md:block">
-  <h2 class="font-bold text-xl mb-4">Brand</h2>
+    <aside class="w-64 mt-2 bg-white shadow rounded p-4 h-max hidden md:block">
+      <h2 class="font-bold text-xl mb-4">Brand</h2>
 
-  <?php
-    if (!empty($_GET['subcategory_id'])) {
+      <?php
+        if (!empty($_GET['subcategory_id'])) {
+            $sid = (int)$_GET['subcategory_id'];
+            $brands = $conn->query("
+                SELECT DISTINCT brands.brand_id, brands.brand_name
+                FROM brands
+                INNER JOIN products ON products.brand_id = brands.brand_id
+                WHERE products.subcategory_id = $sid
+            ");
+        } else {
+            $brands = $conn->query("SELECT * FROM brands");
+        }
 
-        $sid = (int)$_GET['subcategory_id'];
+        echo '<select class="w-full border rounded px-2 py-1 mt-1"
+                onchange="redirectWithParam(\'brand_id\', this.value)">';
 
-        // Load brands used in products under this subcategory
-        $brands = $conn->query("
-            SELECT DISTINCT brands.brand_id, brands.brand_name
-            FROM brands
-            INNER JOIN products ON products.brand_id = brands.brand_id
-            WHERE products.subcategory_id = $sid
-        ");
+        echo '<option value="">Select brand</option>';
 
-    } else {
-        // Default: show all brands
-        $brands = $conn->query("SELECT * FROM brands");
-    }
+        while ($brand = $brands->fetch_assoc()) {
+            echo '<option value="'.$brand['brand_id'].'">'.$brand['brand_name'].'</option>';
+        }
 
-    echo '<select class="w-full border rounded px-2 py-1 mt-1"
-            onchange="redirectWithParam(\'brand_id\', this.value)">';
-
-    echo '<option value="">Select brand</option>';
-
-    while ($brand = $brands->fetch_assoc()) {
-        echo '<option value="'.$brand['brand_id'].'">'.$brand['brand_name'].'</option>';
-    }
-
-    echo '</select>';
-  ?>
-</aside>
-
+        echo '</select>';
+      ?>
+    </aside>
 
     <!-- PRICE FILTER -->
     <div class="mb-6 bg-white p-4 rounded shadow mt-3">
@@ -172,28 +159,102 @@ include "server_connection.php";
                  </p>';
         }
 
-        // PRODUCT LOOP
+        // PRODUCT LOOP (নতুন কার্ড ডিজাইন)
         while($p = $product->fetch_assoc()){
-            echo '
-            <div class="bg-white shadow rounded p-3 hover:shadow-lg transition">
 
+            $name = htmlspecialchars($p['product_name'], ENT_QUOTES, 'UTF-8');
+
+            // database ধরে নিচ্ছি: price = মূল দাম, discount_price = ডিসকাউন্টের পর দাম (না থাকলে 0)
+            $originalPrice   = (float)$p['price'];
+            $discountPriceDB = isset($p['discount_price']) ? (float)$p['discount_price'] : 0;
+
+            // যদি discount_price সেট থাকে এবং মূল দামের চেয়ে কম হয়, তাহলে ওটাকেই current price ধরি
+            if ($discountPriceDB > 0 && $discountPriceDB < $originalPrice) {
+                $currentPrice = $discountPriceDB;
+            } else {
+                $currentPrice = $originalPrice;
+            }
+
+            // ডিসকাউন্ট পার্সেন্ট
+            $discountPercent = 0;
+            if ($currentPrice < $originalPrice && $originalPrice > 0) {
+                $discountPercent = round((($originalPrice - $currentPrice) / $originalPrice) * 100);
+            }
+
+            $currentPriceFormatted = number_format($currentPrice, 2);
+            $originalPriceFormatted = number_format($originalPrice, 2);
+
+            // ব্যাজ HTML
+            $badgeHtml = '';
+            if ($discountPercent > 0) {
+                $badgeHtml = '
+                <span class="absolute top-3 left-3 bg-red-600 text-white text-xs px-2 py-1 rounded-md shadow">
+                    '.$discountPercent.'% OFF
+                </span>';
+            }
+
+            // প্রাইস HTML
+            $priceHtml = '
+                <span class="text-lg font-bold text-indigo-600">$'.$currentPriceFormatted.'</span>';
+            if ($discountPercent > 0) {
+                $priceHtml .= '
+                <span class="text-sm text-gray-400 line-through ml-2">$'.$originalPriceFormatted.'</span>';
+            }
+
+            echo '
+            <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col group">
+
+                <!-- IMAGE -->
                 <a href="product.php?product_id='.$p['product_id'].'">
-                    <div class="h-36 bg-gray-200 rounded">
-                        <img src="uploads/products/'.$p['thumbnail'].'" 
-                             class="w-full h-full object-cover rounded"/>
+                    <div class="relative h-40 sm:h-48 bg-gray-100 overflow-hidden">
+                        <img 
+                            src="uploads/products/'.$p['thumbnail'].'"
+                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            alt="'.$name.'"
+                        />
+                        '.$badgeHtml.'
                     </div>
                 </a>
 
-                <h3 class="mt-3 font-semibold">'.$p['product_name'].'</h3>
+                <!-- CONTENT -->
+                <div class="p-4 flex flex-col flex-1">
 
-                <button 
-                    class="addToCart bg-indigo-600 text-white w-full py-1 mt-2 rounded block text-center"
-                    data-id="'.$p['product_id'].'"
-                    data-name="'.htmlspecialchars($p['product_name']).'"
-                    data-price="'.$p['price'].'"
-                >
-                    Add to Cart
-                </button>
+                    <!-- NAME -->
+                    <h3 class="text-sm sm:text-base font-semibold text-gray-800 leading-snug line-clamp-2 min-h-[40px]">
+                        '.$name.'
+                    </h3>
+
+                    <!-- RATING (ডামি) -->
+                    <div class="flex items-center mt-2 text-yellow-400 text-xs sm:text-sm">
+                        ★★★★☆
+                        <span class="text-gray-500 ml-2 text-[11px]">4.2</span>
+                    </div>
+
+                    <!-- PRICE -->
+                    <div class="mt-3">
+                        '.$priceHtml.'
+                    </div>
+
+                    <!-- BUTTONS -->
+                    <div class="mt-4 flex gap-2">
+
+                        <a href="product.php?product_id='.$p['product_id'].'"
+                            class="flex-1 border border-indigo-600 text-indigo-600 text-center py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-indigo-50 transition">
+                            View Details
+                        </a>
+
+                        <button 
+                            class="addToCart flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg text-xs sm:text-sm font-medium transition"
+                            data-id="'.$p['product_id'].'"
+                            data-name="'.$name.'"
+                            data-price="'.$currentPrice.'"
+                        >
+                            Add to Cart
+                        </button>
+
+                    </div>
+
+                </div>
 
             </div>
             ';
@@ -231,7 +292,7 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .then(res => res.json())
             .then(data => {
-                if(data.status === "success"){
+                if(data.status === "success" && document.getElementById("cartCount")){
                     document.getElementById("cartCount").innerText = data.cartCount;
                 }
             });
