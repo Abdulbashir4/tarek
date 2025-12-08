@@ -37,7 +37,7 @@ $p = $query->fetch_assoc();
   </header>
 
   <!-- PRODUCT DETAILS WRAPPER -->
-  <div class="max-w-6xl mx-auto p-6 mt-6 bg-white shadow rounded-lg">
+  <div class="max-w-6xl mx-auto p-6 mt-14 lg:mt-30 bg-white shadow rounded-lg">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
 
       <!-- LEFT: PRODUCT GALLERY -->
@@ -210,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById("cartCount").innerText = data.cartCount;
                 }
 
-                alert("Product added to cart!");
+                
             }
         });
 

@@ -78,7 +78,7 @@ $od = $order->fetch_assoc();
 </div>
 
 <!-- FOOTER -->
-<footer class="bg-gray-800 text-white mt-10 py-6 text-center">
+<footer class="bg-gray-800 text-white mt-30 py-6 text-center">
   <p>© 2025 ShopPro — All Rights Reserved.</p>
 </footer>
 

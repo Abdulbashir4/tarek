@@ -1,6 +1,4 @@
-<?php
-include 'server_connection.php';
-?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -129,7 +127,7 @@ include 'server_connection.php';
     <main class="flex-1">
 
       <!-- HERO BANNER -->
-      <section class="h-48 mt-35 md:h-64 w-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow flex items-center justify-center text-white text-center p-6">
+      <section class="h-48 lg:mt-35 mt-12 md:h-64 w-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow flex items-center justify-center text-white text-center p-6">
         <div>
           <h1 class="text-3xl md:text-4xl font-bold">Welcome to ShopPro</h1>
           <p class="mt-2 text-lg">Find the best deals on top products!</p>
@@ -264,13 +262,14 @@ include 'server_connection.php';
 
     </div>
   </section>
-
+<?php include "bottom_navigation_bar.php" ?>
   <!-- FOOTER -->
-  <footer class="bg-gray-800 text-white mt-10 py-6 text-center">
+  <footer class="bg-gray-800 text-white mt-10 py-6 text-center md:h-20 h-5">
     <p>© 2025 ShopPro — All Rights Reserved.</p>
   </footer>
 
 <script>
+ 
 document.addEventListener("DOMContentLoaded", () => {
 
     // সব Add to Cart বাটন সিলেক্ট
@@ -291,15 +290,27 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(res => res.json())
             .then(data => {
 
-                if(data.status === "success" && document.getElementById("cartCount")){
-                    document.getElementById("cartCount").innerText = data.cartCount;
+                if (data.status === "success") {
+                    // Header cart count update
+                    const headerCount = document.getElementById("cartCount");
+                    if (headerCount) {
+                        headerCount.innerText = data.cartCount;
+                    }
+
+                    // Footer / bottom nav cart count update
+                    const footerCount = document.getElementById("footerCartCount");
+                    if (footerCount) {
+                        footerCount.innerText = data.cartCount;
+                    }
                 }
+
             });
 
         });
     });
 
 });
+
 
 // URL এ যেকোনো filter param সেট করার জন্য common function
 function redirectWithParam(key, value){

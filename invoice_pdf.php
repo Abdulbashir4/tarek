@@ -15,7 +15,7 @@ $order_id = (int)$_GET['order_id'];
 
 // --- Load Invoice HTML ---
 ob_start();
-include "invoice_content.php"; // আমরা নতুন ফাইল ব্যবহার করবো
+include "invoice.php"; // আমরা নতুন ফাইল ব্যবহার করবো
 $html = ob_get_clean();
 
 // --- DOMPDF Generate ---
