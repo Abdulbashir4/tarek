@@ -20,10 +20,10 @@ include "server_connection.php";
 <div class="max-w-7xl mx-auto p-4 mt-20 flex gap-6">
 
   <!-- LEFT SIDEBAR -->
-  <div class="flex flex-col">
+  <div class="flex flex-col hidden md:block">
 
     <!-- CATEGORY -->
-    <aside class="w-64 bg-white shadow rounded p-4 h-max hidden md:block">
+    <aside class="w-64 bg-white shadow rounded p-4 h-max">
       <h2 class="font-bold text-xl mb-4">Categories</h2>
 
       <?php
@@ -43,7 +43,7 @@ include "server_connection.php";
     </aside>
 
     <!-- SUBCATEGORY -->
-    <aside class="w-64 mt-2 bg-white shadow rounded p-4 h-max hidden md:block">
+    <aside class="w-64 mt-2 bg-white shadow rounded p-4 h-max">
       <h2 class="font-bold text-xl mb-4">Sub Category</h2>
 
       <?php
@@ -68,7 +68,7 @@ include "server_connection.php";
     </aside>
 
     <!-- BRAND FILTER -->
-    <aside class="w-64 mt-2 bg-white shadow rounded p-4 h-max hidden md:block">
+    <aside class="w-64 mt-2 bg-white shadow rounded p-4 h-max lg:block md:hidden">
       <h2 class="font-bold text-xl mb-4">Brand</h2>
 
       <?php
@@ -269,7 +269,13 @@ include "server_connection.php";
 </div>
 
 <footer class="bg-gray-800 text-white mt-10 py-6 text-center">
-  <p>© 2025 ShopPro — All Rights Reserved.</p>
+  <div class="hidden md:block">
+<h1 class="text-white font-size-20">pc footer</h1>
+  </div>
+  <div class="block md:hidden">
+    <?php include 'bottom_navigation_bar.php'; ?>
+
+  </div>
 </footer>
 
 

@@ -81,6 +81,7 @@ include "server_connection.php";
           <li><a href="admin.php" class="block py-2">Admin</a></li>
           <li><a href="test.php" class="block py-2">Test</a></li>
           <li><a href="shop.php" class="block py-2">Shop</a></li>
+          <li><a href="contact.php" class="block py-2">Contact Us</a></li>
       </ul>
   </nav>
 
