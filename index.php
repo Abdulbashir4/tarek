@@ -1,5 +1,6 @@
 <?php
 session_start();
+include 'global_php.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -338,7 +339,7 @@ echo '
 
   <!-- FOOTER -->
   <footer class="bg-gray-800 text-white mt-10 py-6 text-center md:h-20 h-5">
-    <p>© 2025 ShopPro — All Rights Reserved.</p>
+    <p>© 2025 <?php echo $company['company_name']; ?> — All Rights Reserved. Developed By ENG. ABDUL BASIR</p>
   </footer>
 
 <script>

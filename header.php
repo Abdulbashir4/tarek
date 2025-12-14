@@ -1,5 +1,7 @@
 <?php 
 include "server_connection.php";
+include "global_php.php";
+
 ?>
 <header class="bg-white shadow fixed top-0 w-full z-50">
 
@@ -7,7 +9,7 @@ include "server_connection.php";
   <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
 
     <!-- Logo -->
-    <a href="index.php" class="text-2xl font-bold text-indigo-600">ShopPro</a>
+    <a href="index.php" class="text-2xl font-bold text-indigo-600"><?php echo $company['company_name']; ?></a>
 
     <!-- Desktop Search -->
     <div class="hidden md:flex w-1/2">

@@ -1,3 +1,7 @@
+<?php 
+include 'global_php.php';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,7 +32,7 @@
       <div class="text-center mb-10">
         <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Contact Us</h1>
         <p class="mt-3 text-gray-600 max-w-xl mx-auto">
-          কোনো প্রশ্ন, অর্ডার সমস্যা বা প্রোডাক্ট সম্পর্কে জানতে চান? আমাদের টিম সবসময় সাহায্যের জন্য প্রস্তুত।
+          <?php echo $company['about_us']; ?>
         </p>
       </div>
 
@@ -52,7 +56,7 @@
                 </div>
                 <div>
                   <p class="font-semibold">Phone</p>
-                  <p class="text-gray-600">+880 1700-000000</p>
+                  <p class="text-gray-600"><?php echo $company['mobile_number']; ?></p>
                 </div>
               </div>
 
@@ -63,7 +67,7 @@
                 </div>
                 <div>
                   <p class="font-semibold">Email</p>
-                  <p class="text-gray-600">support@shoppro.com</p>
+                  <p class="text-gray-600"><?php echo $company['email']; ?></p>
                 </div>
               </div>
 
@@ -75,7 +79,7 @@
                 <div>
                   <p class="font-semibold">Office Address</p>
                   <p class="text-gray-600">
-                    House 12, Road 5, Dhanmondi,<br/>Dhaka - 1207, Bangladesh
+                    <?php echo $company['office_address']; ?>
                   </p>
                 </div>
               </div>
@@ -135,7 +139,7 @@
                 type="tel" 
                 name="phone" 
                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
-                placeholder="+8801XXXXXXXXX"
+                placeholder="+8801788832489"
               />
             </div>
 
@@ -235,7 +239,7 @@
   <!-- FOOTER -->
   <footer class="bg-gray-900 text-gray-300 text-sm py-6 mt-8">
     <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-3">
-      <p>© 2025 ShopPro — All Rights Reserved.</p>
+      <p>© 2025 <?php echo $company['company_name']; ?> — All Rights Reserved.Developed By ENG. ABDUL BASIR</p>
       <p>Need quick help? <a href="mailto:support@shoppro.com" class="text-indigo-400 hover:underline">support@shoppro.com</a></p>
     </div>
   </footer>

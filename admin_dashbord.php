@@ -1,3 +1,45 @@
+<?php
+include 'server_connection.php';
+
+// ============================
+// Fetch Completed Orders + Total Sale
+// ============================
+
+$completedOrders = [];
+$totalSale = 0;
+
+$sql = "SELECT * FROM orders WHERE order_status = 'Completed'";
+$result = $conn->query($sql);
+
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $completedOrders[] = $row;
+        $totalSale += (float)$row['total_amount']; // total sale sum
+    }
+}
+
+$total_completed = count($completedOrders);
+
+// ============================
+// Order Counters
+// ============================
+
+// Total orders
+$total_orders = $conn->query("SELECT COUNT(*) AS total FROM orders")->fetch_assoc()['total'];
+
+// Pending
+$pending_orders = $conn->query("SELECT COUNT(*) AS total FROM orders WHERE order_status = 'Pending'")->fetch_assoc()['total'];
+
+// Processing
+$processing_orders = $conn->query("SELECT COUNT(*) AS total FROM orders WHERE order_status = 'Processing'")->fetch_assoc()['total'];
+
+// Shipped
+$shipped_orders = $conn->query("SELECT COUNT(*) AS total FROM orders WHERE order_status = 'Shipped'")->fetch_assoc()['total'];
+
+// Cancelled
+$cancelled_orders = $conn->query("SELECT COUNT(*) AS total FROM orders WHERE order_status = 'Cancelled'") ->fetch_assoc()['total'];
+?>
+
 <!doctype html>
 <html lang="bn">
 <head>
@@ -19,59 +61,12 @@
 
 <!-- Page wrapper -->
 <div class="min-h-screen flex">
-
-  <!-- SIDEBAR (desktop) -->
   
 
-  <!-- MOBILE SIDEBAR (slide-in) -->
-  <div id="mobileSidebar" class="fixed inset-0 z-40 md:hidden hidden">
-    <div id="ms-backdrop" class="absolute inset-0 bg-black/40" ></div>
-    <div class="absolute right-0 top-0 bottom-0 w-72 bg-gray-800 text-white p-4 overflow-auto">
-      <div class="flex items-center justify-between mb-3">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-indigo-500 rounded flex items-center justify-center font-bold">SP</div>
-          <div><div class="text-sm font-semibold">Admin</div><div class="text-xs text-gray-300">admin@shoppro.com</div></div>
-        </div>
-        <button id="mobileClose" class="p-1 hover:bg-gray-700 rounded">✖️</button>
-      </div>
-
-      <nav class="space-y-1">
-        <a class="block px-3 py-2 rounded hover:bg-gray-700" href="#">Dashboard</a>
-        <a class="block px-3 py-2 rounded hover:bg-gray-700" href="#">All Products</a>
-        <a class="block px-3 py-2 rounded hover:bg-gray-700" href="#">Orders</a>
-        <a class="block px-3 py-2 rounded hover:bg-gray-700" href="#">Analytics</a>
-        <a class="block px-3 py-2 rounded hover:bg-gray-700" href="#">Settings</a>
-      </nav>
-    </div>
-  </div>
+  
 
   <!-- Main content -->
-  <div class="flex-1 min-h-screen">
-
-    <!-- TOPBAR -->
-    <header class="sticky top-0 z-20 bg-white border-b">
-      <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <button id="openMobile" class="md:hidden p-2 rounded hover:bg-gray-100">☰</button>
-          <h1 class="text-xl font-semibold hidden sm:block">Dashboard</h1>
-          <div class="relative hidden sm:block">
-            <input id="globalSearch" class="border rounded px-3 py-2 w-80" placeholder="Search orders, products..." />
-            <button onclick="document.getElementById('globalSearch').value='';" class="absolute right-1 top-1.5 text-sm text-gray-500">✖</button>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <button class="p-2 rounded hover:bg-gray-50">🔔 <span class="ml-1 text-xs bg-red-500 text-white px-1 rounded-full">3</span></button>
-          <div class="flex items-center gap-2">
-            <img src="https://i.pravatar.cc/40?img=12" class="w-9 h-9 rounded-full border" />
-            <div class="text-sm">
-              <div class="font-medium">Admin</div>
-              <div class="text-xs text-gray-500">Super Admin</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
+  <div class="flex-1 min-h-screen">   
 
     <!-- PAGE BODY -->
     <main class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -83,19 +78,47 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div class="bg-white p-4 rounded shadow flex items-center justify-between">
             <div>
-              <div class="text-xs text-gray-500">Total Sales</div>
-              <div class="text-2xl font-bold">$24,820</div>
+              <div class="text-xs text-gray-500">Total Sales  = <?= $total_completed ?></div>
+              <div class="text-2xl font-bold">৳<?= number_format($totalSale, 2) ?></div>
               <div class="text-xs text-gray-500 mt-1"><span class="delta-up">+8.4%</span> vs last week</div>
-            </div>
-            <div class="bg-indigo-50 p-3 rounded">
-              <svg class="w-8 h-8 text-indigo-600" viewBox="0 0 24 24" fill="none"><path d="M3 3v18h18" stroke="currentColor" stroke-width="2"/></svg>
             </div>
           </div>
 
           <div class="bg-white p-4 rounded shadow flex items-center justify-between">
             <div>
-              <div class="text-xs text-gray-500">Orders</div>
-              <div class="text-2xl font-bold">1,320</div>
+              <div class="text-xs text-gray-500">Total Orders</div>
+              <div class="text-2xl font-bold"><?= $total_orders ?></div>
+              <div class="text-xs text-gray-500 mt-1"><span class="delta-down">-2.1%</span> vs last week</div>
+            </div>
+          </div>
+          <div class="bg-white p-4 rounded shadow flex items-center justify-between">
+            <div>
+              <div class="text-xs text-gray-500">Order Pending</div>
+              <div class="text-2xl font-bold"><?= $pending_orders ?> </div>
+              <div class="text-xs text-gray-500 mt-1"><span class="delta-up">+8.4%</span> vs last week</div>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded shadow flex items-center justify-between">
+            <div>
+              <div class="text-xs text-gray-500">Cancel Orders</div>
+              <div class="text-2xl font-bold"><?= $cancelled_orders ?></div>
+              <div class="text-xs text-gray-500 mt-1"><span class="delta-down">-2.1%</span> vs last week</div>
+            </div>
+          </div>
+          <div class="bg-white p-4 rounded shadow flex items-center justify-between">
+            <div>
+              <div class="text-xs text-gray-500">Order Processing</div>
+              <div class="text-2xl font-bold"><?= $processing_orders ?></div>
+              <div class="text-xs text-gray-500 mt-1"><span class="delta-up">+8.4%</span> vs last week</div>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded shadow flex items-center justify-between">
+            <div>
+              <div class="text-xs text-gray-500">Orders Shipped</div>
+              <div class="text-2xl font-bold"><?= $shipped_orders ?>
+</div>
               <div class="text-xs text-gray-500 mt-1"><span class="delta-down">-2.1%</span> vs last week</div>
             </div>
             <div class="bg-amber-50 p-3 rounded">
@@ -246,105 +269,6 @@
 </div>
 
 <!-- SCRIPTS: demo data & interactivity -->
-<script>
-  // sidebar submenu toggle
-  document.querySelectorAll('[data-sub]').forEach(btn=>{
-    btn.addEventListener('click', ()=> {
-      const id = btn.dataset.sub;
-      document.getElementById(id).classList.toggle('hidden');
-    });
-  });
-
-  // mobile sidebar open/close
-  const mobileSidebar = document.getElementById('mobileSidebar');
-  document.getElementById('openMobile').addEventListener('click', ()=>{ mobileSidebar.classList.remove('hidden'); document.body.style.overflow='hidden'; });
-  document.getElementById('mobileClose').addEventListener('click', ()=>{ mobileSidebar.classList.add('hidden'); document.body.style.overflow=''; });
-  document.getElementById('ms-backdrop').addEventListener('click', ()=>{ mobileSidebar.classList.add('hidden'); document.body.style.overflow=''; });
-
-  // sample orders data
-  const orders = [
-    {id:2715, customer:'Rahim Uddin', total:79.90, status:'Processing', date:'2025-12-08'},
-    {id:2714, customer:'Fatema Akter', total:34.50, status:'Shipped', date:'2025-12-07'},
-    {id:2713, customer:'Jahid Hasan', total:120.00, status:'Completed', date:'2025-12-06'},
-    {id:2712, customer:'Anika Sultana', total:12.99, status:'Cancelled', date:'2025-12-05'},
-  ];
-
-  function renderOrders(list){
-    const tbody = document.getElementById('ordersTable');
-    tbody.innerHTML = '';
-    list.forEach(o=>{
-      const tr = document.createElement('tr');
-      tr.className = 'border-b hover:bg-gray-50';
-      tr.innerHTML = `
-        <td class="p-3">#${o.id}</td>
-        <td class="p-3">${o.customer}</td>
-        <td class="p-3 font-semibold">$${o.total.toFixed(2)}</td>
-        <td class="p-3"><span class="px-2 py-1 rounded text-xs ${o.status==='Completed'?'bg-green-100 text-green-700': o.status==='Shipped'?'bg-blue-100 text-blue-700': o.status==='Processing'?'bg-yellow-100 text-yellow-700':'bg-red-100 text-red-700'}">${o.status}</span></td>
-        <td class="p-3">${o.date}</td>
-        <td class="p-3"><button data-id="${o.id}" class="viewBtn px-3 py-1 bg-indigo-50 text-indigo-700 rounded text-sm">View</button></td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  renderOrders(orders);
-
-  // filter orders
-  document.getElementById('ordersFilter').addEventListener('input', (e)=>{
-    const q = e.target.value.toLowerCase();
-    renderOrders(orders.filter(o=> (''+o.id).includes(q) || o.customer.toLowerCase().includes(q)));
-  });
-
-  // refresh (demo)
-  document.getElementById('refreshOrders').addEventListener('click', ()=>{
-    // in real app you'd fetch fresh data via AJAX
-    alert('Orders refreshed (demo).');
-  });
-
-  // demo products
-  const products = [
-    {id:101, name:'Wireless Headphone', price:59.99, stock:120, thumb:'https://via.placeholder.com/80'},
-    {id:102, name:'Smart Watch', price:89.99, stock:32, thumb:'https://via.placeholder.com/80'},
-    {id:103, name:'Bluetooth Speaker', price:29.50, stock:74, thumb:'https://via.placeholder.com/80'}
-  ];
-
-  function renderProducts(){
-    const wrap = document.getElementById('productList');
-    wrap.innerHTML = '';
-    products.forEach(p=>{
-      const el = document.createElement('div');
-      el.className = 'flex items-center gap-3';
-      el.innerHTML = `
-        <img src="${p.thumb}" class="w-12 h-12 object-cover rounded">
-        <div class="flex-1">
-          <div class="font-medium">${p.name}</div>
-          <div class="text-xs text-gray-500">$${p.price.toFixed(2)} • ${p.stock} in stock</div>
-        </div>
-        <div class="flex gap-2">
-          <button class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm">Edit</button>
-          <button class="px-2 py-1 bg-red-100 text-red-800 rounded text-sm">Delete</button>
-        </div>
-      `;
-      wrap.appendChild(el);
-    });
-  }
-  renderProducts();
-
-  // small UX: global search focus clears
-  document.getElementById('globalSearch').addEventListener('keydown', (e)=>{
-    if (e.key === 'Enter') {
-      const q = e.target.value.trim().toLowerCase();
-      // just demo: filter products by name
-      const filtered = products.filter(p=> p.name.toLowerCase().includes(q));
-      if (filtered.length) {
-        // show first product in right pane (simple behaviour)
-        alert('Found '+filtered.length+' product(s). (demo)');
-      } else {
-        alert('No results found (demo).');
-      }
-    }
-  });
-</script>
 
 </body>
 </html>
