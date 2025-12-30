@@ -45,9 +45,10 @@ $pages = max(1, ceil($total / $perPage));
 $offset = ($page - 1) * $perPage;
 
 // fetch products with category & brand
-$sql = "SELECT p.*, c.category_name, b.brand_name
+$sql = "SELECT p.*, c.category_name, b.brand_name, sc.subcategory_name
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.category_id
+        LEFT JOIN subcategories sc ON p.subcategory_id = sc.subcategory_id
         LEFT JOIN brands b ON p.brand_id = b.brand_id
         $whereSQL
         ORDER BY p.product_id DESC
@@ -121,8 +122,10 @@ $brands = $conn->query("SELECT brand_id, brand_name FROM brands ORDER BY brand_n
           <thead class="bg-gray-50 text-sm text-gray-600">
             <tr>
               <th class="p-3">#</th>
-              <th class="p-3">Product</th>
-              <th class="p-3">Category / Brand</th>
+              <th class="p-3 w-80">Product</th>
+              <th class="p-3">Category</th>
+              <th class="p-3">Sub Category</th>
+              <th class="p-3">Brand</th>
               <th class="p-3 text-right">Price</th>
               <th class="p-3 text-center">Stock</th>
               <th class="p-3 text-center">Status</th>
@@ -134,6 +137,7 @@ $brands = $conn->query("SELECT brand_id, brand_name FROM brands ORDER BY brand_n
                 $pid = (int)$p['product_id'];
                 $name = htmlspecialchars($p['product_name'], ENT_QUOTES);
                 $cat = htmlspecialchars($p['category_name'] ?? '-', ENT_QUOTES);
+                $sub_cat = htmlspecialchars($p['subcategory_name'] ?? '-', ENT_QUOTES);
                 $brandName = htmlspecialchars($p['brand_name'] ?? '-', ENT_QUOTES);
                 $price = number_format((float)$p['price'], 2);
                 $dprice = isset($p['discount_price']) && $p['discount_price'] > 0 ? number_format((float)$p['discount_price'],2) : null;
@@ -152,7 +156,14 @@ $brands = $conn->query("SELECT brand_id, brand_name FROM brands ORDER BY brand_n
               </td>
               <td class="p-3 align-top">
                 <div class="text-sm"><?php echo $cat; ?></div>
+                <div class="text-xs text-gray-500 mt-1"><?php echo $sub_cat; ?></div>
+              </td>
+              <td class="p-3 align-top">
+                <div class="text-sm"><?php echo $sub_cat; ?></div>
                 <div class="text-xs text-gray-500 mt-1"><?php echo $brandName; ?></div>
+              </td>
+              <td class="p-3 align-top">
+                <div class="text-sm"><?php echo $brandName; ?></div>
               </td>
               <td class="p-3 align-top text-right">
                 <?php if($dprice): ?>

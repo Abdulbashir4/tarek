@@ -183,9 +183,9 @@ while ($row = $q->fetch_assoc()) {
 <td class="border p-2"><?= $row['status'] ? 'Active' : 'Inactive' ?></td>
 <td class="border p-2 text-center space-x-2">
 <a href="?edit=<?= $row['company_id'] ?>" class="bg-yellow-500 text-white px-2 py-1 rounded">Edit</a>
-<!-- <a href="?delete=<?= $row['company_id'] ?>"
+<a href="?delete=<?= $row['company_id'] ?>"
 onclick="return confirm('Are you sure?')"
-class="bg-red-600 text-white px-2 py-1 rounded">Delete</a> -->
+class="bg-red-600 text-white px-2 py-1 rounded">Delete</a>
 </td>
 </tr>
 <?php } ?>

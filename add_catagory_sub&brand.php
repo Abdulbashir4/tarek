@@ -14,17 +14,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Add Category
     if ($act === 'add_category' && ($name = trim($_POST['category_name'] ?? '')) !== '') {
-        $stmt = $conn->prepare("INSERT INTO categories (category_name) VALUES (?)");
-        $stmt->bind_param("s", $name); $stmt->execute(); $stmt->close();
-        redirect();
-    }
+
+      $imgPath = null;
+  
+      if (!empty($_FILES['category_image']['name'])) {
+          $dir = 'uploads/categories/';
+          if (!is_dir($dir)) mkdir($dir, 0777, true);
+  
+          $fileName = time().'_'.basename($_FILES['category_image']['name']);
+          $imgPath = $dir.$fileName;
+          move_uploaded_file($_FILES['category_image']['tmp_name'], $imgPath);
+      }
+  
+      $stmt = $conn->prepare(
+        "INSERT INTO categories (category_name, category_image) VALUES (?, ?)"
+      );
+      $stmt->bind_param("ss", $name, $imgPath);
+      $stmt->execute();
+      $stmt->close();
+  
+      redirect();
+  }
+  
 
     // Update Category
-    if ($act === 'update_category' && ($id = intval($_POST['category_id'] ?? 0)) && ($name = trim($_POST['category_name'] ?? '')) !== '') {
-        $stmt = $conn->prepare("UPDATE categories SET category_name = ? WHERE category_id = ?");
-        $stmt->bind_param("si", $name, $id); $stmt->execute(); $stmt->close();
-        redirect();
+    if ($act === 'update_category'
+    && ($id = intval($_POST['category_id'] ?? 0))
+    && ($name = trim($_POST['category_name'] ?? '')) !== ''
+) {
+
+    $imgSql = "";
+    $params = [$name, $id];
+    $types = "si";
+
+    if (!empty($_FILES['category_image']['name'])) {
+        $dir = 'uploads/categories/';
+        if (!is_dir($dir)) mkdir($dir, 0777, true);
+
+        $fileName = time().'_'.basename($_FILES['category_image']['name']);
+        $imgPath = $dir.$fileName;
+        move_uploaded_file($_FILES['category_image']['tmp_name'], $imgPath);
+
+        $imgSql = ", category_image = ?";
+        $params = [$name, $imgPath, $id];
+        $types = "ssi";
     }
+
+    $stmt = $conn->prepare(
+      "UPDATE categories SET category_name = ? $imgSql WHERE category_id = ?"
+    );
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $stmt->close();
+
+    redirect();
+}
+
 
     // Add Subcategory
     if ($act === 'add_subcategory' && ($cid = intval($_POST['category_id'] ?? 0)) && ($name = trim($_POST['subcategory_name'] ?? '')) !== '') {
@@ -95,7 +140,7 @@ if (isset($_GET['delete_brand'])) {
 $editCategory = $editSubcategory = $editBrand = null;
 if (isset($_GET['edit_category'])) {
     $id = intval($_GET['edit_category']);
-    if ($id) $editCategory = $conn->query("SELECT category_id, category_name FROM categories WHERE category_id = $id")->fetch_assoc();
+    if ($id) $editCategory = $conn->query("SELECT category_id, category_name, category_image FROM categories WHERE category_id = $id")->fetch_assoc();
 }
 if (isset($_GET['edit_subcategory'])) {
     $id = intval($_GET['edit_subcategory']);
@@ -110,6 +155,100 @@ if (isset($_GET['edit_brand'])) {
 $categories = $conn->query("SELECT * FROM categories ORDER BY category_name");
 $subcategories = $conn->query("SELECT s.*, c.category_name FROM subcategories s LEFT JOIN categories c USING(category_id) ORDER BY s.subcategory_name");
 $brands = $conn->query("SELECT b.*, s.subcategory_name, c.category_name FROM brands b LEFT JOIN subcategories s ON b.subcategory_id = s.subcategory_id LEFT JOIN categories c ON s.category_id = c.category_id ORDER BY b.brand_id DESC");
+
+/*
+|--------------------------------------------------------------------------
+| CSV IMPORT (Normal POST + AJAX – same logic)
+|--------------------------------------------------------------------------
+*/
+
+$isAjax = isset($_POST['ajax']) && $_POST['ajax'] === 'upload_csv';
+
+if (isset($_FILES['csv_file']['tmp_name'])) {
+
+    $file = fopen($_FILES['csv_file']['tmp_name'], 'r');
+
+    // Skip header row
+    fgetcsv($file);
+
+    // optional report counters (AJAX এ কাজে লাগবে)
+    $total = $inserted = 0;
+
+    while (($data = fgetcsv($file, 1000, ",")) !== FALSE) {
+
+        // আপনার আগের কোড 그대로 ⬇
+        $category_id    = mysqli_real_escape_string($conn, $data[0]);
+        $category_name  = mysqli_real_escape_string($conn, $data[1]);
+        $category_image = mysqli_real_escape_string($conn, $data[2]);
+
+        $query = "INSERT INTO categories (category_id, category_name, category_image)
+                  VALUES ('$category_id', '$category_name', '$category_image')
+                  ON DUPLICATE KEY UPDATE
+                  category_name='$category_name',
+                  category_image='$category_image'";
+
+        mysqli_query($conn, $query);
+
+        $total++;
+        $inserted++;
+    }
+
+    fclose($file);
+
+    // ---------- Response handling ----------
+    if ($isAjax) {
+        echo json_encode([
+            'status'   => 'success',
+            'message'  => 'CSV Successfully Uploaded!',
+            'total'    => $total,
+            'inserted' => $inserted
+        ]);
+    } else {
+        echo "CSV Successfully Uploaded!";
+    }
+
+} else {
+
+    if ($isAjax) {
+        echo json_encode([
+            'status'  => 'error',
+            'message' => 'No file selected!'
+        ]);
+    } else {
+        echo "No file selected!";
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| CSV EXPORT HANDLER (Same Page)
+|--------------------------------------------------------------------------
+*/
+
+if (isset($_POST['export_csv'])) {
+
+    // ⚠️ Header অবশ্যই HTML output এর আগেই যাবে
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename=categories.csv');
+
+    $output = fopen('php://output', 'w');
+
+    // CSV header row
+    fputcsv($output, ['category_id', 'category_name', 'category_image']);
+
+    $result = mysqli_query(
+        $conn,
+        "SELECT category_id, category_name, category_image FROM categories"
+    );
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        fputcsv($output, $row);
+    }
+
+    fclose($output);
+    exit; // খুব গুরুত্বপূর্ণ
+}
 ?>
 <!doctype html>
 <html lang="bn">
@@ -142,23 +281,61 @@ $brands = $conn->query("SELECT b.*, s.subcategory_name, c.category_name FROM bra
     <div class="grid lg:grid-cols-3 gap-6 mb-6">
       <!-- Category -->
       <div class="card bg-white p-4 rounded shadow">
-        <h2 class="font-semibold mb-2">Category</h2>
-        <form method="post" class="space-y-2">
-          <?php if ($editCategory): ?>
-            <input type="hidden" name="action" value="update_category">
-            <input type="hidden" name="category_id" value="<?= intval($editCategory['category_id']) ?>">
-            <input name="category_name" value="<?= htmlspecialchars($editCategory['category_name']) ?>" required class="w-full border rounded px-3 py-2">
-            <div class="flex gap-2">
-              <button class="bg-green-600 text-white px-3 py-2 rounded">Update</button>
-              <a href="<?= $_SERVER['PHP_SELF'] ?>" class="border px-3 py-2 rounded">Cancel</a>
-            </div>
-          <?php else: ?>
-            <input type="hidden" name="action" value="add_category">
-            <input name="category_name" placeholder="Category name" required class="w-full border rounded px-3 py-2">
-            <button class="w-full bg-indigo-600 text-white px-3 py-2 rounded">Add Category</button>
-          <?php endif; ?>
-        </form>
+  <h2 class="font-semibold mb-2">Category</h2>
+
+  <form method="post" enctype="multipart/form-data" class="space-y-2">
+
+    <?php if ($editCategory): ?>
+      <input type="hidden" name="action" value="update_category">
+      <input type="hidden" name="category_id" value="<?= intval($editCategory['category_id']) ?>">
+
+      <input
+        name="category_name"
+        value="<?= htmlspecialchars($editCategory['category_name']) ?>"
+        required
+        class="w-full border rounded px-3 py-2"
+      >
+
+      <!-- Image upload -->
+      <input type="file" name="category_image" class="w-full border rounded px-3 py-2">
+
+      <!-- Old image preview -->
+      <?php if (!empty($editCategory['category_image'])): ?>
+        <img src="<?= $editCategory['category_image'] ?>" class="h-16 mt-2 rounded">
+      <?php endif; ?>
+
+      <div class="flex gap-2">
+        <button class="bg-green-600 text-white px-3 py-2 rounded">Update</button>
+        <a href="<?= $_SERVER['PHP_SELF'] ?>" class="border px-3 py-2 rounded">Cancel</a>
       </div>
+
+    <?php else: ?>
+
+      <input type="hidden" name="action" value="add_category">
+
+      <input
+        name="category_name"
+        placeholder="Category name"
+        required
+        class="w-full border rounded px-3 py-2"
+      >
+
+      <input
+        type="file"
+        name="category_image"
+        required
+        class="w-full border rounded px-3 py-2"
+      >
+
+      <button class="w-full bg-indigo-600 text-white px-3 py-2 rounded">
+        Add Category
+      </button>
+
+    <?php endif; ?>
+
+  </form>
+</div>
+
 
       <!-- Subcategory -->
       <div class="card bg-white p-4 rounded shadow">
@@ -226,7 +403,25 @@ $brands = $conn->query("SELECT b.*, s.subcategory_name, c.category_name FROM bra
 
     <!-- Category Table -->
     <div class="bg-white p-4 rounded shadow overflow-x-auto">
-        <h3 class="font-semibold mb-3 text-lg">Categories</h3>
+        <div class="flex justify-between">
+          <h3 class="font-semibold mb-3 text-lg">Categories</h3>
+          
+          <div class="flex gap-6">
+            <form method="post">
+            <button type="submit"
+            name="export_csv" class="font-semibold mb-2 rounded border border-back px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Export</button>
+          </form>
+          <form method="post" enctype="multipart/form-data" class="flex items-center gap-2">
+          <input type="file" name="csv_file" id="csv_file" class="border rounded px-2 py-1 w-24 mb-2">
+          <button type="submit"class="mb-2 font-semibold rounded border px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Upload</button>
+          </form>
+
+          </div>
+        
+        </div>
+          
+          
+        
 
         <?php 
             $cat_res = $conn->query("SELECT * FROM categories ORDER BY category_name");
@@ -258,8 +453,14 @@ $brands = $conn->query("SELECT b.*, s.subcategory_name, c.category_name FROM bra
 
     <!-- Subcategory Table -->
     <div class="bg-white p-4 rounded shadow overflow-x-auto">
-        <h3 class="font-semibold mb-3 text-lg">Subcategories</h3>
-
+          <div class="flex justify-between">
+          <h3 class="font-semibold mb-3 text-lg">Subcategories</h3>
+          <div class="flex gap-6">
+          <h2 class="font-semibold mb-2 rounded border border-back px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Export</h2>
+          <h2 class="font-semibold mb-2 rounded border border-back px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Upload</h2>
+          </div>
+        
+        </div>
         <?php 
             $sub_res = $conn->query("SELECT s.*, c.category_name FROM subcategories s LEFT JOIN categories c USING(category_id) ORDER BY s.subcategory_name");
             $j = 1;
@@ -295,8 +496,14 @@ $brands = $conn->query("SELECT b.*, s.subcategory_name, c.category_name FROM bra
 
 <!-- SECOND ROW : BRAND TABLE -->
 <div class="bg-white p-4 rounded shadow overflow-x-auto mb-10">
-    <h3 class="font-semibold mb-3 text-lg">Brands</h3>
-
+    <div class="flex justify-between">
+          <h3 class="font-semibold mb-3 text-lg">Brands</h3>
+          <div class="flex gap-6">
+          <h2 class="font-semibold mb-2 rounded border border-back px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Export</h2>
+          <h2 class="font-semibold mb-2 rounded border border-back px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Upload</h2>
+          </div>
+        
+        </div>
     <?php 
         $brand_res = $conn->query("SELECT b.*, s.subcategory_name, c.category_name 
                                    FROM brands b 
@@ -340,6 +547,9 @@ $brands = $conn->query("SELECT b.*, s.subcategory_name, c.category_name FROM bra
 
   </div>
 
-  
+  <script>
+formData.append('ajax', 'upload_csv');
+
+</script>
 </body>
 </html>

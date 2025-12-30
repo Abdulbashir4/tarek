@@ -1,5 +1,5 @@
 <?php
-include "server_connection.php";
+include "global_php.php";
 
 $order_id = (int)$_GET['order_id'];
 
@@ -82,7 +82,7 @@ body { font-family: 'Arial'; color:#333; }
 
     <!-- Header -->
     <div class="header">
-        <div class="logo">ShopPro Invoice</div>
+        <div class="logo"><?php echo $company['company_name']; ?></div>
             <a 
   href="invoice_pdf.php?order_id=<?php echo $order_id; ?>" 
   class="inline-block mt-4 px-5 py-2 bg-indigo-600 text-white font-semibold rounded shadow hover:bg-indigo-700 transition"
@@ -117,11 +117,11 @@ body { font-family: 'Arial'; color:#333; }
 
         <!-- Shop Info -->
         <div class="info-box">
-            <h3 style="margin-bottom:10px;">ShopPro</h3>
-            <p>ShopPro E-commerce</p>
-            <p>Dhaka, Bangladesh</p>
-            <p>Email: support@shoppro.com</p>
-            <p>Phone: +880 1234-567890</p>
+            <h3 style="margin-bottom:10px;"><?php echo $company['company_name']; ?></h3>
+            <p><?php echo $company['company_name']; ?> E-commerce</p>
+            <p><?php echo $company['office_address']; ?></p>
+            <p>Email: <?php echo $company['email']; ?></p>
+            <p>Phone: <?php echo $company['mobile_number']; ?></p>
             <p>Website: shoppro.com</p>
         </div>
 
@@ -168,8 +168,8 @@ body { font-family: 'Arial'; color:#333; }
 
     <!-- Footer -->
     <div class="footer">
-        Thank you for shopping with ShopPro!  
-        <br>For support, contact: support@shoppro.com
+        Thank you for shopping with <?php echo $company['company_name']; ?>!  
+        <br>For support, contact: WhatsApp <?php echo $company['mobile_number']; ?>
     </div>
 
 </div>

@@ -41,6 +41,7 @@ include "global_php.php";
   <!-- MOBILE MENU (hidden by default) -->
   <nav id="mobileMenu" class="hidden bg-indigo-50 shadow md:hidden px-4 pb-4 max-h-[80vh] overflow-y-auto mt-1">
       <ul class="space-y-2">
+      <li><a href="index.php" class="block py-2">Home</a></li>
           <?php
           // Load Categories
           $categories = $conn->query("SELECT * FROM categories");

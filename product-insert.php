@@ -77,7 +77,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
     if($conn->query($sql)){
         echo "<script>
                 alert('Product Added Successfully!');
-                window.location='product-add.php';
+                window.location='admin.php';
               </script>";
     }else{
         echo "<script>

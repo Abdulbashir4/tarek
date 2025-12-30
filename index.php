@@ -154,7 +154,47 @@ include 'global_php.php';
           <h1 class="text-3xl md:text-4xl font-bold">Welcome to ShopPro</h1>
           <p class="mt-2 text-lg">Find the best deals on top products!</p>
         </div>
+        <P id="category"></P>
       </section>
+      
+      <!-- CATEGORY GRID -->
+
+    <section  class="mt-10">
+      <h2 class="text-2xl font-bold text-center mb-6">Shop by Category</h2>
+
+      <?php
+      // 🔴 IMPORTANT FIX: এখানে নতুন করে query
+      $cate = $conn->query("SELECT * FROM categories");
+      ?>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+
+        <?php while ($c = $cate->fetch_assoc()) { ?>
+          <a href="index.php?category_id=<?php echo (int)$c['category_id']; ?>" class="block">
+
+            <div class="group bg-white rounded shadow overflow-hidden">
+
+              <div class="h-28 bg-gray-100 overflow-hidden">
+                <img
+                  src="<?php echo !empty($c['category_image']) ? $c['category_image'] : 'images/no-image.png'; ?>"
+                  alt="<?php echo htmlspecialchars($c['category_name']); ?>"
+                  class="w-full h-full object-cover group-hover:scale-110 transition duration-300"
+                >
+              </div>
+
+              <div class="p-3 text-center">
+                <h3 class="text-sm font-semibold">
+                  <?php echo htmlspecialchars($c['category_name']); ?>
+                </h3>
+              </div>
+
+            </div>
+          </a>
+        <?php } ?>
+
+      </div>
+    </section>
+
 
       <!-- FEATURED PRODUCTS -->
       <section class="mt-8">

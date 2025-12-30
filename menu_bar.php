@@ -62,7 +62,6 @@
 
             <!-- Static Items -->
             <li><a href="admin.php">Admin</a></li>
-            <li><a href="test.php">Test</a></li>
             <li><a href="shop.php">Shop</a></li>
             <li><a href="contact.php">Contact Us</a></li>
         </ul>

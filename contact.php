@@ -1,5 +1,12 @@
 <?php 
 include 'global_php.php';
+function make_url($url) {
+  if (empty($url)) return '#';
+  if (!preg_match('~^https?://~i', $url)) {
+    return 'https://' . $url;
+  }
+  return $url;
+}
 ?>
 
 <!DOCTYPE html>
@@ -82,19 +89,48 @@ include 'global_php.php';
                     <?php echo $company['office_address']; ?>
                   </p>
                 </div>
+                <a 
+  href="<?= htmlspecialchars(make_url($company['google_map_location'])); ?>"  
+  target="_blank"
+  rel="noopener noreferrer"
+  class="px-3 py-1 rounded-full border border-gray-300 hover:border-indigo-500 hover:text-indigo-600 transition">
+  View Shop Location
+</a>
               </div>
             </div>
           </div>
 
           <!-- SOCIAL LINKS -->
           <div class="mt-8 border-t pt-4">
-            <p class="text-sm font-semibold mb-2">Follow Us</p>
-            <div class="flex items-center gap-3 text-sm">
-              <a href="#" class="px-3 py-1 rounded-full border border-gray-300 hover:border-indigo-500 hover:text-indigo-600 transition">Facebook</a>
-              <a href="#" class="px-3 py-1 rounded-full border border-gray-300 hover:border-indigo-500 hover:text-indigo-600 transition">Instagram</a>
-              <a href="#" class="px-3 py-1 rounded-full border border-gray-300 hover:border-indigo-500 hover:text-indigo-600 transition">YouTube</a>
-            </div>
-          </div>
+  <p class="text-sm font-semibold mb-2">Follow Us</p>
+  <div class="flex items-center gap-3 text-sm">
+    <a 
+  href="<?= htmlspecialchars(make_url($company['facebook_page'])); ?>"  
+  target="_blank"
+  rel="noopener noreferrer"
+  class="px-3 py-1 rounded-full border border-gray-300 hover:border-indigo-500 hover:text-indigo-600 transition">
+  Facebook
+</a>
+    <a 
+  href="<?= htmlspecialchars(make_url($company['youtube_channel'])); ?>"  
+  target="_blank"
+  rel="noopener noreferrer"
+  class="px-3 py-1 rounded-full border border-gray-300 hover:border-indigo-500 hover:text-indigo-600 transition">
+  YouTube
+</a>
+    <a 
+  href="<?= htmlspecialchars(make_url($company['youtube_channel'])); ?>"  
+  target="_blank"
+  rel="noopener noreferrer"
+  class="px-3 py-1 rounded-full border border-gray-300 hover:border-indigo-500 hover:text-indigo-600 transition">
+  instragram
+</a>
+    
+
+
+  </div>
+</div>
+
         </div>
 
         <!-- RIGHT SIDE: CONTACT FORM -->
@@ -301,7 +337,8 @@ btn.addEventListener("click", (e) => {
   }
 
   // WhatsApp direct open
-  const phone = "966569989506"; 
+  // const phone = "966569989506"; 
+  const phone = "<?php echo $company['whatsapp_number']; ?>"; 
   const text = encodeURIComponent("Hello ShopPro, I need help.");
   window.open(`https://wa.me/${phone}?text=${text}`, "_blank");
 });

@@ -1,10 +1,11 @@
 <?php
 include 'server_connection.php';
-$sql = "SELECT * FROM companies";
-$logo = $conn->query($sql);
-$company = $logo->fetch_assoc();
+$com = "SELECT * FROM companies";
+$compa = $conn->query($com);
+$company = $compa->fetch_assoc();
 
-
+$cat = "SELECT * FROM categories";
+$cate =$conn->query($cat);
 
 
 

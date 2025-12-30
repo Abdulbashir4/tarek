@@ -10,7 +10,15 @@ if(!isset($_GET['product_id'])){
 $product_id = (int)$_GET['product_id'];
 
 // product details load
-$query = $conn->query("SELECT * FROM products WHERE product_id = $product_id");
+$query = $conn->query("
+    SELECT 
+        pro.*,
+        bra.brand_name,
+        cat.category_name
+    FROM products pro
+    LEFT JOIN brands bra ON pro.brand_id = bra.brand_id
+    LEFT JOIN categories cat ON pro.category_id = cat.category_id
+    WHERE pro.product_id = $product_id");
 
 if($query->num_rows == 0){
     echo "Product not found!";
@@ -18,6 +26,10 @@ if($query->num_rows == 0){
 }
 
 $p = $query->fetch_assoc();
+
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -111,7 +123,7 @@ $p = $query->fetch_assoc();
         </h2>
 
         <p class="text-3xl font-bold text-indigo-600 mb-4">
-          $<?php echo $p['price']; ?>
+          ৳<?php echo $p['price']; ?>
         </p>
 
         <p class="text-gray-700 mb-6 leading-relaxed">
@@ -141,14 +153,16 @@ $p = $query->fetch_assoc();
 </button>
 
 
-          <button class="border border-indigo-600 text-indigo-600 px-6 py-3 rounded text-lg w-full md:w-auto hover:bg-indigo-50">
+          <button id="buyNowBtn"
+            data-id="<?= $p['product_id']; ?>"
+             class="border border-indigo-600 text-indigo-600 px-6 py-3 rounded text-lg w-full md:w-auto hover:bg-indigo-50">
             Buy Now
           </button>
         </div>
 
         <div class="mt-8 text-gray-700 space-y-2">
-          <p><strong>Brand:</strong> <?php echo $p['brand_id']; ?></p>
-          <p><strong>Category:</strong> <?php echo $p['category_id']; ?></p>
+          <p><strong>Brand:</strong> <?php echo $p['brand_name']; ?></p>
+          <p><strong>Category:</strong> <?php echo $p['category_name']; ?></p>
           <p><strong>Stock:</strong> <?php echo $p['stock_qty']; ?></p>
         </div>
 
@@ -170,54 +184,105 @@ $p = $query->fetch_assoc();
     <p>© 2025 ShopPro — All Rights Reserved.</p>
   </footer>
 <script>
-  function changeMainImage(imagePath) {
-    document.getElementById("mainImage").src = imagePath;
+  /* =========================
+   IMAGE GALLERY FUNCTIONS
+========================= */
+function changeMainImage(imagePath) {
+  const mainImage = document.getElementById("mainImage");
+  if (mainImage) {
+    mainImage.src = imagePath;
+  }
 }
 
 function scrollGalleryRight() {
-    let box = document.getElementById("galleryWrapper");
-    box.scrollLeft += 150; // Scroll to right
+  const box = document.getElementById("galleryWrapper");
+  if (box) {
+    box.scrollLeft += 150;
+  }
 }
 
 function scrollGalleryLeft() {
-    let box = document.getElementById("galleryWrapper");
-    box.scrollLeft -= 150; // Scroll to left
+  const box = document.getElementById("galleryWrapper");
+  if (box) {
+    box.scrollLeft -= 150;
+  }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+/* =========================
+   CART & BUY NOW FUNCTIONS
+========================= */
+document.addEventListener("DOMContentLoaded", function () {
 
-    const addBtn = document.getElementById("addSingleCart");
+  const qtyInput   = document.getElementById("qtyInput");
+  const addBtn     = document.getElementById("addSingleCart");
+  const buyNowBtn  = document.getElementById("buyNowBtn");
 
-    addBtn.addEventListener("click", function(){
+  // Safety check
+  if (!qtyInput || !addBtn || !buyNowBtn) {
+    console.error("Cart buttons or quantity input not found!");
+    return;
+  }
 
-        let id = this.dataset.id;
-        let qty = document.getElementById("qtyInput").value;
+  /**
+   * Add product to cart
+   * @param {number} productId
+   * @param {number} qty
+   * @param {boolean} redirect
+   */
+  function addToCart(productId, qty, redirect = false) {
 
-        fetch("add_to_cart.php", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: `id=${id}&qty=${qty}`
-        })
-        .then(res => res.json())
-        .then(data => {
+    qty = parseInt(qty);
 
-            if(data.status === "success"){
+    if (isNaN(qty) || qty < 1) {
+      alert("Please enter a valid quantity!");
+      return;
+    }
 
-                // হেডারের কার্ট কাউন্টার আপডেট
-                if(document.getElementById("cartCount")){
-                    document.getElementById("cartCount").innerText = data.cartCount;
-                }
+    fetch("add_to_cart.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: `id=${encodeURIComponent(productId)}&qty=${encodeURIComponent(qty)}`
+    })
+    .then(response => response.json())
+    .then(data => {
 
-                
-            }
-        });
+      if (data.status === "success") {
 
+        // Update cart count in header
+        const cartCount = document.getElementById("cartCount");
+        if (cartCount) {
+          cartCount.innerText = data.cartCount;
+        }
+
+        // Buy Now → redirect to cart page
+        if (redirect === true) {
+          window.location.href = "cart.php";
+        }
+
+      } else {
+        alert(data.message || "Failed to add product to cart!");
+      }
+
+    })
+    .catch(error => {
+      console.error("Add to cart error:", error);
+      alert("Something went wrong. Please try again.");
     });
+  }
+
+  /* Add to Cart Button */
+  addBtn.addEventListener("click", function () {
+    addToCart(this.dataset.id, qtyInput.value, false);
+  });
+
+  /* Buy Now Button */
+  buyNowBtn.addEventListener("click", function () {
+    addToCart(this.dataset.id, qtyInput.value, true);
+  });
 
 });
-
 </script>
 </body>
 </html>
