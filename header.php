@@ -3,13 +3,13 @@ include "server_connection.php";
 include "global_php.php";
 
 ?>
-<header class="bg-white shadow fixed top-0 w-full z-50">
+<header class="bg-white shadow fixed top-0 w-full z-50 h-16">
 
   <!-- TOP HEADER -->
-  <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center ">
 
     <!-- Logo -->
-    <a href="index.php" class="text-2xl font-bold text-indigo-600"><?php echo $company['company_name']; ?></a>
+    <a href="index.php" class="text-2xl font-bold text-indigo-600 "><?php echo $company['company_name']; ?></a>
 
     <!-- Desktop Search -->
     <div class="hidden md:flex w-1/2">
@@ -40,8 +40,8 @@ include "global_php.php";
 
   <!-- MOBILE MENU (hidden by default) -->
   <nav id="mobileMenu" class="hidden bg-indigo-50 shadow md:hidden px-4 pb-4 max-h-[80vh] overflow-y-auto mt-1">
-      <ul class="space-y-2">
-      <li><a href="index.php" class="block py-2">Home</a></li>
+      <ul class="">
+      <li><a href="index.php" class="block py-2 ">Home</a></li>
           <?php
           // Load Categories
           $categories = $conn->query("SELECT * FROM categories");
@@ -87,6 +87,7 @@ include "global_php.php";
           <li><a href="contact.php" class="block py-2">Contact Us</a></li>
       </ul>
   </nav>
+  
 
 </header>
 

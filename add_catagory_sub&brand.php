@@ -156,99 +156,376 @@ $categories = $conn->query("SELECT * FROM categories ORDER BY category_name");
 $subcategories = $conn->query("SELECT s.*, c.category_name FROM subcategories s LEFT JOIN categories c USING(category_id) ORDER BY s.subcategory_name");
 $brands = $conn->query("SELECT b.*, s.subcategory_name, c.category_name FROM brands b LEFT JOIN subcategories s ON b.subcategory_id = s.subcategory_id LEFT JOIN categories c ON s.category_id = c.category_id ORDER BY b.brand_id DESC");
 
-/*
-|--------------------------------------------------------------------------
-| CSV IMPORT (Normal POST + AJAX – same logic)
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   REUSABLE CSV IMPORT FUNCTION
+========================================================= */
+// function csvImport($conn, $fileKey, $table, $columns, $updateCols) {
 
-$isAjax = isset($_POST['ajax']) && $_POST['ajax'] === 'upload_csv';
+//     if (!isset($_FILES[$fileKey]) || !is_uploaded_file($_FILES[$fileKey]['tmp_name'])) {
+//         return ['status'=>'error', 'message'=>'No file selected'];
+//     }
 
-if (isset($_FILES['csv_file']['tmp_name'])) {
+//     $file = fopen($_FILES[$fileKey]['tmp_name'], 'r');
+//     fgetcsv($file); // skip header
 
-    $file = fopen($_FILES['csv_file']['tmp_name'], 'r');
+//     $total = $inserted = $skipped = 0;
 
-    // Skip header row
-    fgetcsv($file);
+//     while (($data = fgetcsv($file, 1000, ",")) !== false) {
+//         $total++;
 
-    // optional report counters (AJAX এ কাজে লাগবে)
-    $total = $inserted = 0;
+//         if (count($data) < count($columns)) {
+//             $skipped++;
+//             continue;
+//         }
 
-    while (($data = fgetcsv($file, 1000, ",")) !== FALSE) {
+//         $values = [];
+//         foreach ($columns as $i => $col) {
+//             $values[$col] = mysqli_real_escape_string($conn, trim($data[$i] ?? ''));
+//         }
 
-        // আপনার আগের কোড 그대로 ⬇
-        $category_id    = mysqli_real_escape_string($conn, $data[0]);
-        $category_name  = mysqli_real_escape_string($conn, $data[1]);
-        $category_image = mysqli_real_escape_string($conn, $data[2]);
+//         // basic validation: last column (name) empty হলে skip
+//         if ($values[end($columns)] === '') {
+//             $skipped++;
+//             continue;
+//         }
 
-        $query = "INSERT INTO categories (category_id, category_name, category_image)
-                  VALUES ('$category_id', '$category_name', '$category_image')
-                  ON DUPLICATE KEY UPDATE
-                  category_name='$category_name',
-                  category_image='$category_image'";
+//         $colsSql   = implode(',', array_keys($values));
+//         $valsSql   = "'" . implode("','", array_values($values)) . "'";
+//         $updateSql = implode(',', array_map(fn($c)=>"$c=VALUES($c)", $updateCols));
 
-        mysqli_query($conn, $query);
+//         $sql = "INSERT INTO $table ($colsSql)
+//                 VALUES ($valsSql)
+//                 ON DUPLICATE KEY UPDATE $updateSql";
 
+//         mysqli_query($conn, $sql);
+//         $inserted++;
+//     }
+
+//     fclose($file);
+
+//     return [
+//         'status'   => 'success',
+//         'message'  => ucfirst($table) . ' CSV uploaded successfully!',
+//         'total'    => $total,
+//         'inserted' => $inserted,
+//         'skipped'  => $skipped
+//     ];
+// }
+
+
+// /* =========================================================
+//    REUSABLE CSV EXPORT FUNCTION
+// ========================================================= */
+// function csvExport($conn, $table, $columns, $filename) {
+
+//     header('Content-Type: text/csv; charset=utf-8');
+//     header("Content-Disposition: attachment; filename=$filename");
+
+//     $out = fopen('php://output', 'w');
+//     fputcsv($out, $columns);
+
+//     $cols = implode(',', $columns);
+//     $res  = mysqli_query($conn, "SELECT $cols FROM $table");
+
+//     while ($row = mysqli_fetch_assoc($res)) {
+//         fputcsv($out, $row);
+//     }
+
+//     fclose($out);
+//     exit;
+// }
+
+// /* ================= CATEGORY ================= */
+// if (isset($_POST['ajax']) && $_POST['ajax'] === 'upload_category_csv') {
+//     echo json_encode(
+//         csvImport(
+//             $conn,
+//             'category_csv',
+//             'categories',
+//             ['category_id','category_name','category_image'],
+//             ['category_name','category_image']
+//         )
+//     );
+//     exit;
+// }
+
+// if (isset($_POST['export_category_csv'])) {
+//     csvExport(
+//         $conn,
+//         'categories',
+//         ['category_id','category_name','category_image'],
+//         'categories.csv'
+//     );
+// }
+
+// /* ================= SUBCATEGORY ================= */
+// if (isset($_POST['ajax']) && $_POST['ajax'] === 'upload_subcategory_csv') {
+//     echo json_encode(
+//         csvImport(
+//             $conn,
+//             'subcategory_csv',
+//             'subcategories',
+//             ['subcategory_id','category_id','subcategory_name'],
+//             ['category_id','subcategory_name']
+//         )
+//     );
+//     exit;
+// }
+
+// if (isset($_POST['export_subcategory_csv'])) {
+//     csvExport(
+//         $conn,
+//         'subcategories',
+//         ['subcategory_id','category_id','subcategory_name'],
+//         'subcategories.csv'
+//     );
+// }
+
+// /* ================= BRAND ================= */
+// if (isset($_POST['ajax']) && $_POST['ajax'] === 'upload_brand_csv') {
+//     echo json_encode(
+//         csvImport(
+//             $conn,
+//             'brand_csv',
+//             'brands',
+//             ['brand_id','subcategory_id','brand_name'],
+//             ['subcategory_id','brand_name']
+//         )
+//     );
+//     exit;
+// }
+
+// if (isset($_POST['export_brand_csv'])) {
+//     csvExport(
+//         $conn,
+//         'brands',
+//         ['brand_id','subcategory_id','brand_name'],
+//         'brands.csv'
+//     );
+// }
+
+
+
+
+
+function csvImport($conn, $fileKey, $table, $columns, $uniqueBy, $resolver = null) {
+
+    if (!isset($_FILES[$fileKey]) || !is_uploaded_file($_FILES[$fileKey]['tmp_name'])) {
+        return ['status'=>'error','message'=>'No file selected'];
+    }
+
+    $file = fopen($_FILES[$fileKey]['tmp_name'], 'r');
+    fgetcsv($file); // skip header
+
+    $total = $inserted = $skipped = 0;
+
+    while (($data = fgetcsv($file, 1000, ",")) !== false) {
         $total++;
+
+        if (count($data) < count($columns)) {
+            $skipped++; continue;
+        }
+
+        $row = [];
+        foreach ($columns as $i => $col) {
+            $row[$col] = mysqli_real_escape_string($conn, trim($data[$i] ?? ''));
+        }
+
+        // empty last column = skip
+        if ($row[end($columns)] === '') {
+            $skipped++; continue;
+        }
+
+        // resolve foreign keys if needed
+        if ($resolver) {
+            $row = $resolver($conn, $row);
+            if ($row === null) {
+                $skipped++; continue;
+            }
+        }
+
+        // check existing row by natural key
+        $where = [];
+        foreach ($uniqueBy as $c) {
+            $where[] = "$c='{$row[$c]}'";
+        }
+
+        $check = mysqli_query($conn, "SELECT 1 FROM $table WHERE ".implode(' AND ', $where)." LIMIT 1");
+
+        if (mysqli_num_rows($check)) {
+            // update
+            $set = [];
+            foreach ($row as $c=>$v) {
+                if (!in_array($c, $uniqueBy)) {
+                    $set[] = "$c='$v'";
+                }
+            }
+            mysqli_query($conn,"UPDATE $table SET ".implode(',',$set)." WHERE ".implode(' AND ',$where));
+        } else {
+            // insert
+            mysqli_query(
+                $conn,
+                "INSERT INTO $table (".implode(',',array_keys($row)).")
+                 VALUES ('".implode("','",array_values($row))."')"
+            );
+        }
+
         $inserted++;
     }
 
     fclose($file);
 
-    // ---------- Response handling ----------
-    if ($isAjax) {
-        echo json_encode([
-            'status'   => 'success',
-            'message'  => 'CSV Successfully Uploaded!',
-            'total'    => $total,
-            'inserted' => $inserted
-        ]);
-    } else {
-        echo "CSV Successfully Uploaded!";
-    }
-
-} else {
-
-    if ($isAjax) {
-        echo json_encode([
-            'status'  => 'error',
-            'message' => 'No file selected!'
-        ]);
-    } else {
-        echo "No file selected!";
-    }
+    return [
+        'status'=>'success',
+        'message'=>ucfirst($table).' CSV uploaded successfully',
+        'total'=>$total,
+        'inserted'=>$inserted,
+        'skipped'=>$skipped
+    ];
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| CSV EXPORT HANDLER (Same Page)
-|--------------------------------------------------------------------------
-*/
-
-if (isset($_POST['export_csv'])) {
-
-    // ⚠️ Header অবশ্যই HTML output এর আগেই যাবে
+function csvExport($conn, $sql, $headers, $filename) {
     header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename=categories.csv');
+    header("Content-Disposition: attachment; filename=$filename");
 
-    $output = fopen('php://output', 'w');
+    $out = fopen('php://output','w');
+    fputcsv($out,$headers);
 
-    // CSV header row
-    fputcsv($output, ['category_id', 'category_name', 'category_image']);
+    $res = mysqli_query($conn,$sql);
+    while ($row = mysqli_fetch_assoc($res)) {
+        fputcsv($out,$row);
+    }
+    fclose($out);
+    exit;
+}
 
-    $result = mysqli_query(
-        $conn,
-        "SELECT category_id, category_name, category_image FROM categories"
+
+if (isset($_POST['ajax']) && $_POST['ajax']==='upload_category_csv') {
+    echo json_encode(
+        csvImport(
+            $conn,
+            'category_csv',
+            'categories',
+            ['category_name','category_image'],
+            ['category_name']
+        )
     );
+    exit;
+}
 
-    while ($row = mysqli_fetch_assoc($result)) {
-        fputcsv($output, $row);
+
+if (isset($_POST['export_category_csv'])) {
+    csvExport(
+        $conn,
+        "SELECT category_name,category_image FROM categories",
+        ['category_name','category_image'],
+        'categories.csv'
+    );
+}
+
+
+if (isset($_POST['ajax']) && $_POST['ajax']==='upload_subcategory_csv') {
+    echo json_encode(
+        csvImport(
+            $conn,
+            'subcategory_csv',
+            'subcategories',
+            ['category_name','subcategory_name'],
+            ['subcategory_name'],
+            function($conn,$row){
+                $q = mysqli_query($conn,"SELECT category_id FROM categories WHERE category_name='{$row['category_name']}'");
+                if (!$c = mysqli_fetch_assoc($q)) return null;
+                return [
+                    'category_id'=>$c['category_id'],
+                    'subcategory_name'=>$row['subcategory_name']
+                ];
+            }
+        )
+    );
+    exit;
+}
+
+
+if (isset($_POST['export_subcategory_csv'])) {
+    csvExport(
+        $conn,
+        "SELECT c.category_name,s.subcategory_name
+         FROM subcategories s
+         JOIN categories c ON s.category_id=c.category_id",
+        ['category_name','subcategory_name'],
+        'subcategories.csv'
+    );
+}
+
+
+if (isset($_POST['ajax']) && $_POST['ajax']==='upload_brand_csv') {
+    echo json_encode(
+        csvImport(
+            $conn,
+            'brand_csv',
+            'brands',
+            ['subcategory_name','brand_name'],
+            ['brand_name'],
+            function($conn,$row){
+                $q = mysqli_query($conn,"SELECT subcategory_id FROM subcategories WHERE subcategory_name='{$row['subcategory_name']}'");
+                if (!$s = mysqli_fetch_assoc($q)) return null;
+                return [
+                    'subcategory_id'=>$s['subcategory_id'],
+                    'brand_name'=>$row['brand_name']
+                ];
+            }
+        )
+    );
+    exit;
+}
+
+
+if (isset($_POST['export_brand_csv'])) {
+    csvExport(
+        $conn,
+        "SELECT s.subcategory_name,b.brand_name
+         FROM brands b
+         JOIN subcategories s ON b.subcategory_id=s.subcategory_id",
+        ['subcategory_name','brand_name'],
+        'brands.csv'
+    );
+}
+
+
+
+if (isset($_POST['export_category_csv'])) {
+
+    $zipName = 'categories_export.zip';
+    $zip = new ZipArchive();
+    $zip->open($zipName, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+    // CSV build
+    $csv = fopen('php://temp', 'r+');
+    fputcsv($csv, ['category_name','image_file']);
+
+    $res = mysqli_query($conn, "SELECT category_name, category_image FROM categories");
+    while ($r = mysqli_fetch_assoc($res)) {
+
+        $imgFile = basename($r['category_image']);
+        fputcsv($csv, [$r['category_name'], $imgFile]);
+
+        if ($r['category_image'] && file_exists($r['category_image'])) {
+            $zip->addFile($r['category_image'], 'images/'.$imgFile);
+        }
     }
 
-    fclose($output);
-    exit; // খুব গুরুত্বপূর্ণ
+    rewind($csv);
+    $zip->addFromString('categories.csv', stream_get_contents($csv));
+    fclose($csv);
+    $zip->close();
+
+    header('Content-Type: application/zip');
+    header('Content-Disposition: attachment; filename='.$zipName);
+    readfile($zipName);
+    unlink($zipName);
+    exit;
 }
+
 ?>
 <!doctype html>
 <html lang="bn">
@@ -408,11 +685,10 @@ if (isset($_POST['export_csv'])) {
           
           <div class="flex gap-6">
             <form method="post">
-            <button type="submit"
-            name="export_csv" class="font-semibold mb-2 rounded border border-back px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Export</button>
+            <button name="export_category_csv" class="font-semibold mb-2 rounded border border-back px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Export</button>
           </form>
-          <form method="post" enctype="multipart/form-data" class="flex items-center gap-2">
-          <input type="file" name="csv_file" id="csv_file" class="border rounded px-2 py-1 w-24 mb-2">
+          <form id="catUpload" enctype="multipart/form-data" class="flex items-center gap-2">
+          <input type="file" name="category_csv" required class="border rounded px-2 py-1 w-24 mb-2">
           <button type="submit"class="mb-2 font-semibold rounded border px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Upload</button>
           </form>
 
@@ -454,10 +730,18 @@ if (isset($_POST['export_csv'])) {
     <!-- Subcategory Table -->
     <div class="bg-white p-4 rounded shadow overflow-x-auto">
           <div class="flex justify-between">
-          <h3 class="font-semibold mb-3 text-lg">Subcategories</h3>
+          <h3 class="font-semibold mb-3 text-lg">SubCategories</h3>
+          
           <div class="flex gap-6">
-          <h2 class="font-semibold mb-2 rounded border border-back px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Export</h2>
-          <h2 class="font-semibold mb-2 rounded border border-back px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Upload</h2>
+            <form method="post">
+            <button type="submit"
+            name="export_subcategory_csv" class="font-semibold mb-2 rounded border border-back px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Export</button>
+          </form>
+          <form id="subUpload" enctype="multipart/form-data" class="flex items-center gap-2">
+          <input type="file" name="subcategory_csv" required class="border rounded px-2 py-1 w-24 mb-2">
+          <button type="submit"class="mb-2 font-semibold rounded border px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Upload</button>
+          </form>
+
           </div>
         
         </div>
@@ -499,8 +783,15 @@ if (isset($_POST['export_csv'])) {
     <div class="flex justify-between">
           <h3 class="font-semibold mb-3 text-lg">Brands</h3>
           <div class="flex gap-6">
-          <h2 class="font-semibold mb-2 rounded border border-back px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Export</h2>
-          <h2 class="font-semibold mb-2 rounded border border-back px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Upload</h2>
+            <form method="post">
+            <button type="submit"
+            name="export_brand_csv" class="font-semibold mb-2 rounded border border-back px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Export</button>
+          </form>
+          <form id="brandUpload" enctype="multipart/form-data" class="flex items-center gap-2">
+          <input type="file" name="brand_csv" id="brandCsvInput" required class="border rounded px-2 py-1 w-24 mb-2">
+          <button type="submit"class="mb-2 font-semibold rounded border px-3 py-1 bg-indigo-50 hover:bg-indigo-300 hover:text-black">Upload</button>
+          </form>
+
           </div>
         
         </div>
@@ -548,8 +839,69 @@ if (isset($_POST['export_csv'])) {
   </div>
 
   <script>
-formData.append('ajax', 'upload_csv');
+// ---------- CATEGORY CSV ----------
+const catForm = document.getElementById('catUpload');
+if (catForm) {
+    catForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const data = new FormData(catForm);
+        data.append('ajax', 'upload_category_csv');
 
+        fetch('', { method: 'POST', body: data })
+            .then(res => res.json())
+            .then(res => {
+                alert(
+                    `${res.message}\n` +
+                    `Total: ${res.total}, Inserted: ${res.inserted}, Skipped: ${res.skipped}`
+                );
+                catForm.reset();
+            })
+            .catch(() => alert('Category upload failed'));
+    });
+}
+
+// ---------- SUBCATEGORY CSV ----------
+const subForm = document.getElementById('subUpload');
+if (subForm) {
+    subForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const data = new FormData(subForm);
+        data.append('ajax', 'upload_subcategory_csv');
+
+        fetch('', { method: 'POST', body: data })
+            .then(res => res.json())
+            .then(res => {
+                alert(
+                    `${res.message}\n` +
+                    `Total: ${res.total}, Inserted: ${res.inserted}, Skipped: ${res.skipped}`
+                );
+                subForm.reset();
+            })
+            .catch(() => alert('Subcategory upload failed'));
+    });
+}
+
+// ---------- BRAND CSV ----------
+const brandForm = document.getElementById('brandUpload');
+if (brandForm) {
+    brandForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const data = new FormData(brandForm);
+        data.append('ajax', 'upload_brand_csv');
+
+        fetch('', { method: 'POST', body: data })
+            .then(res => res.json())
+            .then(res => {
+                alert(
+                    `${res.message}\n` +
+                    `Total: ${res.total}, Inserted: ${res.inserted}, Skipped: ${res.skipped}`
+                );
+                brandForm.reset();
+            })
+            .catch(() => alert('Brand upload failed'));
+    });
+}
 </script>
+
 </body>
 </html>

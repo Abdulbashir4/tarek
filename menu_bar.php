@@ -12,8 +12,8 @@
     <!-- HEADER MENU BAR -->
   <nav class="cls01 mt-10 fixed w-full z-50 hidden md:block">
     
-    <div>
-        <ul>
+    <div class="flex flex-nowrap overflow-x-auto">
+        <ul class="shrink-0 ">
         <?php
         
         // 1️⃣ Load Categories
@@ -23,8 +23,8 @@
             $cat_id = $cat['category_id'];
 
             echo '
-            <li class="group">
-                <a href="index.php?category_id='.$cat['category_id'].'">'.$cat['category_name'].' ▼</a>';
+            <li class="group border border-gray-400 rounded px-2 py-1 mb-3 hover:bg-indigo-500">
+                <a class="text-gray-700 group-hover:text-black transition" href="index.php?category_id='.$cat['category_id'].'">'.$cat['category_name'].' ▼</a>';
 
             // 2️⃣ Load Subcategories
             $sub_query = $conn->query("SELECT * FROM subcategories WHERE category_id=$cat_id");
@@ -37,7 +37,7 @@
 
                 echo '
                 <li class="group-sub">
-                    <a href="index.php?subcategory_id='.$sub['subcategory_id'].'" class="cls02">'.$sub['subcategory_name'].' ►</a>';
+                    <a  href="index.php?subcategory_id='.$sub['subcategory_id'].'" class="cls02">'.$sub['subcategory_name'].' ►</a>';
                 // 3️⃣ Load Brands
                 $brand_query = $conn->query("SELECT * FROM brands WHERE subcategory_id=$sub_id");
 
@@ -71,6 +71,5 @@
 
 
 </header>
-    
 </body>
 </html>

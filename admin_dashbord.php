@@ -229,7 +229,7 @@ $cancelled_orders = $conn->query("SELECT COUNT(*) AS total FROM orders WHERE ord
         <div class="bg-white rounded shadow p-4">
           <h3 class="font-semibold mb-3">Quick Actions</h3>
           <div class="grid grid-cols-2 gap-2">
-            <button class="p-3 bg-indigo-600 text-white rounded">Add Product</button>
+            <a class="p-3 bg-indigo-600 text-white rounded" href="add_product.php">Add Product</a>
             <button class="p-3 bg-amber-500 text-white rounded">Add Discount</button>
             <button class="p-3 bg-green-600 text-white rounded">Export CSV</button>
             <button class="p-3 bg-gray-200 rounded">Settings</button>

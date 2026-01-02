@@ -101,10 +101,10 @@ include 'global_php.php';
   ?>
 
   <!-- MAIN WRAPPER -->
-  <div class="max-w-7xl mx-auto mt-6 px-4 flex gap-6">
+  <div class="max-w-7xl mx-auto mt-6 flex gap-6">
 
     <!-- SIDEBAR WITH FILTERS -->
-    <aside class="w-[220px] bg-white shadow rounded p-4 h-max sticky top-40 hidden md:block">
+    <aside class="w-[240px] bg-white shadow rounded p-4 h-max sticky top-45 hidden md:block">
       <div>
         <h2 class="font-bold text-xl mb-4">Categories</h2>
 
@@ -149,7 +149,7 @@ include 'global_php.php';
     <main class="flex-1">
 
       <!-- HERO BANNER -->
-      <section class="h-48 lg:mt-35 mt-12 md:h-64 w-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow flex items-center justify-center text-white text-center p-6">
+      <section class="h-48 lg:mt-40 mt-12 md:h-64 w-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow flex items-center justify-center text-white text-center p-6">
         <div>
           <h1 class="text-3xl md:text-4xl font-bold">Welcome to ShopPro</h1>
           <p class="mt-2 text-lg">Find the best deals on top products!</p>

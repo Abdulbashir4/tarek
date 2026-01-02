@@ -109,6 +109,10 @@
           <svg class="w-5 h-5 text-indigo-300" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 4.5L18 8l-4 2.5L12 15l-2-4.5L6 8l4.5-1.5L12 2z"/></svg>
           <span class="label">Company Information</span>
         </a>
+        <a class="nav-item flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-700" href="index.php">
+          <svg class="w-5 h-5 text-indigo-300" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 4.5L18 8l-4 2.5L12 15l-2-4.5L6 8l4.5-1.5L12 2z"/></svg>
+          <span class="label">Visit Shop</span>
+        </a>
       </nav>
     </aside>
 
@@ -173,6 +177,11 @@
           <svg class="w-5 h-5 text-indigo-300" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 4.5L18 8l-4 2.5L12 15l-2-4.5L6 8l4.5-1.5L12 2z"/></svg>
           <span class="label">Company Information</span>
         </a>
+        <a class="nav-item flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-700" href="index.php">
+          <svg class="w-5 h-5 text-indigo-300" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.5 4.5L18 8l-4 2.5L12 15l-2-4.5L6 8l4.5-1.5L12 2z"/></svg>
+          <span class="label">Visit Shop</span>
+        </a>
+        
     </nav>
   </aside>
 </div>
