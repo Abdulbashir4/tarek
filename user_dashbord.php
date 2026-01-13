@@ -1,9 +1,28 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+require __DIR__ . "/server_connection.php";
+
+$uid = (int)$_SESSION['user_id'];
+
+$q = $conn->prepare("SELECT name, phone, profile_image FROM users WHERE id=?");
+$q->bind_param("i", $uid); // ✅ FIXED
+$q->execute();
+$user = $q->get_result()->fetch_assoc();
+
+$profile = $user['profile_image'] ?? 'default.png';
+?>
+
 <!DOCTYPE html>
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
   <title>User Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
 
@@ -12,9 +31,18 @@
   <!-- Sidebar -->
   <aside class="w-64 bg-white shadow-lg">
     <div class="p-6 border-b">
-      <img src="https://i.pravatar.cc/100" class="w-16 h-16 rounded-full mx-auto">
-      <h2 class="text-center font-semibold mt-2">Hasan Ahmed</h2>
-      <p class="text-center text-sm text-gray-500">hasan@example.com</p>
+      <img id="profilePreview"
+         src="uploads/<?= htmlspecialchars($profile) ?>"
+         class="w-20 h-20 rounded-full border object-cover mx-auto">
+         <input type="file" id="profile_image" class="hidden" accept="image/*">
+
+        <button onclick="profile_image.click()"
+                class="mt-2 px-4 py-2 bg-blue-500 text-white rounded">
+            Upload Profile Image
+        </button>
+      <h2 class="text-center font-semibold mt-2"><?php echo $_SESSION['name']; ?></h2>
+      <p class="text-center text-sm text-gray-500"><?= htmlspecialchars($user['phone'] ?? '') ?></p>
+      <p id="uploadMsg" class="mt-2 text-sm"></p>
     </div>
 
     <nav class="p-4 space-y-2">
@@ -23,8 +51,8 @@
       <a href="#" class="block px-4 py-2 hover:bg-gray-100 rounded">ইচ্ছের তালিকা</a>
       <a href="#" class="block px-4 py-2 hover:bg-gray-100 rounded">কার্ট</a>
       <a href="#" class="block px-4 py-2 hover:bg-gray-100 rounded">ঠিকানা</a>
-      <a href="#" class="block px-4 py-2 hover:bg-gray-100 rounded">প্রোফাইল</a>
-      <a href="#" class="block px-4 py-2 text-red-500 hover:bg-red-50 rounded">লগআউট</a>
+      <a href="index.php" class="block px-4 py-2 hover:bg-gray-100 rounded">Visit Shop</a>
+      <a href="logout.php" class="block px-4 py-2 text-red-500 hover:bg-red-50 rounded">লগআউট</a>
     </nav>
   </aside>
 
@@ -128,6 +156,36 @@
 
   </main>
 </div>
+<script>
+profile_image.addEventListener("change", () => {
+    const file = profile_image.files[0];
+    if (!file) return;
 
+    const fd = new FormData();
+    fd.append("profile_image", file);
+
+    uploadMsg.innerText = "Uploading...";
+
+    fetch("ajax_upload_profile.php", {
+        method: "POST",
+        body: fd
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            profilePreview.src = data.image + "?t=" + Date.now();
+            // ✅ header image update (no reload)
+        const headerImg = document.getElementById("headerProfileImg");
+        if (headerImg) {
+            headerImg.src = data.image + "?t=" + Date.now();
+        }
+            uploadMsg.innerText = "Image updated";
+        } else {
+            uploadMsg.innerText = data.message;
+        }
+    })
+    .catch(() => uploadMsg.innerText = "Server error");
+});
+</script>
 </body>
 </html>

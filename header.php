@@ -1,5 +1,24 @@
 <?php 
-include "server_connection.php";
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+require_once __DIR__ . "/server_connection.php";
+
+$img = "default.png";
+
+if (isset($_SESSION['user_id'])) {
+    $uid = (int)$_SESSION['user_id'];
+
+    $q = $conn->prepare("SELECT profile_image FROM users WHERE id=?");
+    $q->bind_param("i", $uid);
+    $q->execute();
+
+    $r = $q->get_result()->fetch_assoc();
+    if (!empty($r['profile_image'])) {
+        $img = $r['profile_image'];
+    }
+}
 include "global_php.php";
 
 ?>
@@ -30,7 +49,48 @@ include "global_php.php";
             </a>
 
       <!-- Profile -->
-      <a href="profile.php" class="text-gray-700 hover:text-indigo-600">👤</a>
+      <!-- ✅ Dropdown Wrapper -->
+    <div class="relative">
+
+        <!-- ✅ group wrapper -->
+        <div class="group inline-block">
+
+            <!-- ✅ Profile Image (Hover Trigger) -->
+             <a href="user_redirect.php" class="block">
+            <img id="headerProfileImg"
+                 src="uploads/<?= htmlspecialchars($img) ?>"
+                 class="w-10 h-10 rounded-full border object-cover cursor-pointer"
+                 alt="profile">
+                 </a>
+            <!-- ✅ Dropdown Menu -->
+            <div
+                class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-md border z-50
+                       opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                       transition-all duration-200 z-[1000]">
+
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <!-- ✅ Logged in: Logout -->
+                    <a href="logout.php"
+                       class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded-md">
+                        Logout
+                    </a>
+                <?php else: ?>
+                    <!-- ❌ Not logged in: Login + Register -->
+                    <a href="login.php"
+                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md">
+                        Login
+                    </a>
+
+                    <a href="register.php"
+                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md">
+                        Register
+                    </a>
+                <?php endif; ?>
+
+            </div>
+
+        </div>
+    </div>
     </div>
 
     <!-- Mobile Menu Toggle (☰) -->
@@ -85,6 +145,7 @@ include "global_php.php";
           <li><a href="test.php" class="block py-2">Test</a></li>
           <li><a href="shop.php" class="block py-2">Shop</a></li>
           <li><a href="contact.php" class="block py-2">Contact Us</a></li>
+          
       </ul>
   </nav>
   

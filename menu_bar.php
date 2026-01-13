@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body >
-    <header class="bg-white shadow sticky top-0 z-50">
+    <header class="bg-white shadow sticky top-0 z-10">
     
     <!-- HEADER MENU BAR -->
   <nav class="cls01 mt-10 fixed w-full z-50 hidden md:block">

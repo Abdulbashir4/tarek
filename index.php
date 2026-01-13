@@ -149,13 +149,32 @@ include 'global_php.php';
     <main class="flex-1">
 
       <!-- HERO BANNER -->
-      <section class="h-48 lg:mt-40 mt-12 md:h-64 w-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow flex items-center justify-center text-white text-center p-6">
-        <div>
-          <h1 class="text-3xl md:text-4xl font-bold">Welcome to ShopPro</h1>
-          <p class="mt-2 text-lg">Find the best deals on top products!</p>
-        </div>
-        <P id="category"></P>
-      </section>
+      <section class="relative h-48 lg:mt-40 mt-12 md:h-64 w-full rounded-xl overflow-hidden shadow">
+
+    <!-- 🎥 Background Video -->
+    <video 
+        class="absolute inset-0 w-full h-full object-cover"
+        autoplay 
+        muted 
+        loop 
+        playsinline
+    >
+        <source src="image/video.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- 🔲 Gradient Overlay (text readable করার জন্য) -->
+    <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/70 to-purple-600/70"></div>
+
+    <!-- 📝 Content -->
+    <div class="relative z-9 flex flex-col items-center justify-center h-full text-white text-center p-6">
+        <h1 class="text-3xl md:text-4xl font-bold"><?php echo $company['company_name']; ?></h1>
+        <p class="mt-2 text-lg">Find the best deals on top products!</p>
+        <p id="category"></p>
+    </div>
+
+</section>
+
       
       <!-- CATEGORY GRID -->
 

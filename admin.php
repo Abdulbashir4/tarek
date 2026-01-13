@@ -1,3 +1,30 @@
+<?php 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+require_once __DIR__ . "/server_connection.php";
+
+$img = "default.png";
+
+if (isset($_SESSION['user_id'])) {
+    $uid = (int)$_SESSION['user_id'];
+
+    $q = $conn->prepare("SELECT profile_image FROM users WHERE id=?");
+    $q->bind_param("i", $uid);
+    $q->execute();
+
+    $r = $q->get_result()->fetch_assoc();
+    if (!empty($r['profile_image'])) {
+        $img = $r['profile_image'];
+    }
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="bn">
 <head>
